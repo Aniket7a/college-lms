@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Student Dashboard')}"></head>
+<body>
+<div class="app-wrapper">
+    <div th:replace="~{fragments/layout :: sidebar('dashboard')}"></div>
+
+    <div class="app-main">
+        <div th:replace="~{fragments/layout :: navbar('Student Dashboard', null)}"></div>
+
+        <div class="app-content">
+            <div th:replace="~{fragments/layout :: alerts}"></div>
+
+            <!-- Welcome Header Card -->
+            <div class="saas-card bg-primary text-white p-4 mb-4" style="background: linear-gradient(135deg, #0F172A 0%, #1E3A8A 100%) !important;">
+                <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+                    <div>
+                        <span class="badge bg-primary-subtle text-primary border-0 mb-2" th:text="${student.academicYear}">2026-2027</span>
+                        <h4 class="fw-bold mb-1" th:text="'Hello, ' + ${student.user.fullName}">Hello, Aarav Patel</h4>
+                        <div class="text-light small" style="opacity: 0.85;">
+                            Roll: <strong class="text-white" th:text="${student.rollNumber}">2024-CS-001</strong> &bull;
+                            <span th:text="${student.course != null ? student.course.name : ''}">B.Tech CS</span> &bull;
+                            <span th:text="'Semester ' + ${student.currentSemester}">Sem 3</span>
+                        </div>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <a th:href="@{/student/assignments}" class="btn btn-light btn-sm fw-semibold shadow-sm">
+                            <i class="bi bi-file-earmark-text me-1"></i> My Assignments
+                        </a>
+                        <a th:href="@{/student/results}" class="btn btn-outline-light btn-sm fw-semibold">
+                            <i class="bi bi-award me-1"></i> Academic Results
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Metric Cards -->
+            <div class="row g-3 mb-4">
+                <div class="col-xl-3 col-md-6">
+                    <div class="stat-card">
+                        <div class="stat-icon emerald"><i class="bi bi-award-fill"></i></div>
+                        <div>
+                            <div class="stat-val" th:text="${performance.overallPercentage} + '%'">92.5%</div>
+                            <div class="stat-label">Overall Performance (Grade <span th:text="${performance.grade}">A+</span>)</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-md-6">
+                    <div class="stat-card">
+                        <div class="stat-icon blue"><i class="bi bi-book-half"></i></div>
+                        <div>
+                            <div class="stat-val" th:text="${mySubjects.size()}">3</div>
+                            <div class="stat-label">Enrolled Subjects</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-md-6">
+                    <div class="stat-card">
+                        <div class="stat-icon amber"><i class="bi bi-clock-history"></i></div>
+                        <div>
+                            <div class="stat-val" th:text="${pendingAssignments.size()}">0</div>
+                            <div class="stat-label">Pending Assignments</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-md-6">
+                    <div class="stat-card">
+                        <div class="stat-icon purple"><i class="bi bi-check-circle-fill"></i></div>
+                        <div>
+                            <div class="stat-val" th:text="${submittedCount}">1</div>
+                            <div class="stat-label">Completed Submissions</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Performance Chart & Pending Deadlines Row -->
+            <div class="row g-4 mb-4">
+                <!-- Academic Performance Progress Chart -->
+                <div class="col-lg-7">
+                    <div class="saas-card h-100">
+                        <div class="card-header-clean">
+                            <div>
+                                <h6 class="card-title-clean">Subject-Wise Academic Mastery</h6>
+                                <p class="card-subtitle-clean">Cumulative percentage across evaluations</p>
+                            </div>
+                            <a th:href="@{/student/results}" class="btn btn-sm btn-saas-outline">Full Breakdown</a>
+                        </div>
+                        <div class="card-body-clean">
+                            <canvas id="studentPerfChart" height="130"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pending Assignments & Tests -->
+                <div class="col-lg-5">
+                    <div class="saas-card h-100">
+                        <div class="card-header-clean">
+                            <h6 class="card-title-clean">Upcoming Tasks & Deadlines</h6>
+                        </div>
+                        <div class="card-body-clean p-0">
+                            <div th:if="${#lists.isEmpty(pendingAssignments) and #lists.isEmpty(quizzes)}" class="text-center py-5 text-muted small">
+                                <i class="bi bi-check2-circle fs-2 text-success d-block mb-2"></i>
+                                You have no pending assignments or upcoming tests!
+                            </div>
+                            <div class="list-group list-group-flush">
+                                <a th:each="a : ${pendingAssignments}" th:href="@{/student/assignments/{id}(id=${a.id})}"
+                                   class="list-group-item list-group-item-action p-3 d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <div class="d-flex align-items-center gap-2 mb-1">
+                                            <span class="badge bg-warning-subtle text-warning">Assignment</span>
+                                            <span class="badge bg-light text-dark border font-monospace" th:text="${a.subject.code}">CS301</span>
+                                        </div>
+                                        <div class="fw-bold text-dark small" th:text="${a.title}">Assignment Title</div>
+                                        <div class="text-muted" style="font-size: 0.75rem;">Due: <span th:text="${#temporals.format(a.dueDate, 'dd MMM yyyy, HH:mm')}">Date</span></div>
+                                    </div>
+                                    <i class="bi bi-arrow-right text-muted"></i>
+                                </a>
+
+                                <a th:each="q : ${quizzes}" th:if="${!q.expired}" th:href="@{/student/quizzes/{id}(id=${q.id})}"
+                                   class="list-group-item list-group-item-action p-3 d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <div class="d-flex align-items-center gap-2 mb-1">
+                                            <span class="badge bg-purple-subtle text-purple" style="background:#FAF5FF; color:#8B5CF6;">Online Quiz</span>
+                                            <span class="badge bg-light text-dark border font-monospace" th:text="${q.subject.code}">CS301</span>
+                                        </div>
+                                        <div class="fw-bold text-dark small" th:text="${q.title}">Quiz Title</div>
+                                        <div class="text-muted" style="font-size: 0.75rem;">Duration: <span th:text="${q.durationMinutes} + ' mins'">20 mins</span></div>
+                                    </div>
+                                    <i class="bi bi-arrow-right text-muted"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Evaluated Marks -->
+            <div class="saas-card">
+                <div class="card-header-clean">
+                    <div>
+                        <h6 class="card-title-clean">Recent Evaluated Marks & Feedback</h6>
+                        <p class="card-subtitle-clean">Latest graded assignments, quizzes, and practical records</p>
+                    </div>
+                    <a th:href="@{/student/results}" class="btn btn-sm btn-saas-outline">View All Results</a>
+                </div>
+                <div class="card-body-clean p-0">
+                    <div th:if="${#lists.isEmpty(recentMarks)}" class="text-center py-4 text-muted small">
+                        No evaluated marks recorded yet.
+                    </div>
+                    <div class="table-responsive" th:unless="${#lists.isEmpty(recentMarks)}">
+                        <table class="table-clean">
+                            <thead>
+                                <tr>
+                                    <th>Subject</th>
+                                    <th>Assessment Title</th>
+                                    <th>Assessment Type</th>
+                                    <th>Obtained Marks</th>
+                                    <th>Max Marks</th>
+                                    <th>Percentage</th>
+                                    <th>Teacher Remarks</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="m : ${recentMarks}">
+                                    <td>
+                                        <span class="badge bg-light text-dark border font-monospace" th:text="${m.assessment.subject.code}">CS301</span>
+                                        <span class="small fw-semibold text-dark ms-1" th:text="${m.assessment.subject.name}">DSA</span>
+                                    </td>
+                                    <td class="fw-bold text-dark" th:text="${m.assessment.title}">Assignment 1</td>
+                                    <td><span class="badge bg-secondary-subtle text-secondary" th:text="${m.assessment.assessmentType.displayName}">Assignment</span></td>
+                                    <td>
+                                        <span class="fw-bold fs-6 text-primary" th:text="${m.marksObtained}">18.5</span>
+                                    </td>
+                                    <td class="text-muted" th:text="${m.assessment.maxMarks}">20</td>
+                                    <td>
+                                        <span class="badge"
+                                              th:classappend="${m.percentage >= 75 ? 'bg-success-subtle text-success' : 'bg-warning-subtle text-warning'}"
+                                              th:text="${#numbers.formatDecimal(m.percentage, 1, 1)} + '%'">92.5%</span>
+                                    </td>
+                                    <td class="text-muted small" th:text="${m.teacherRemarks != null ? m.teacherRemarks : '-'}">Remarks</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div th:replace="~{fragments/layout :: scripts}"></div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const ctx = document.getElementById('studentPerfChart');
+        if (ctx) {
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Data Structures', 'Database Systems', 'Web Tech & Cloud'],
+                    datasets: [{
+                        label: 'My Score (%)',
+                        data: [92.5, 90.0, 88.0],
+                        backgroundColor: '#2563EB',
+                        borderRadius: 6
+                    }, {
+                        label: 'Class Average (%)',
+                        data: [78.0, 75.5, 82.0],
+                        backgroundColor: '#CBD5E1',
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: { beginAtZero: true, max: 100 }
+                    }
+                }
+            });
+        }
+    });
+</script>
+</body>
+</html>

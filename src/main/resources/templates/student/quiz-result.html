@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Quiz Results - ' + ${quiz.title})}"></head>
+<body>
+<div class="app-wrapper">
+    <div th:replace="~{fragments/layout :: sidebar('quizzes')}"></div>
+
+    <div class="app-main">
+        <div th:replace="~{fragments/layout :: navbar('Quiz Result & Feedback', null)}"></div>
+
+        <div class="app-content">
+            <div th:replace="~{fragments/layout :: alerts}"></div>
+
+            <!-- Score Summary Card -->
+            <div class="saas-card text-center p-5 mb-4 mx-auto" style="max-width: 700px;">
+                <div class="stat-icon mx-auto mb-3" style="width: 64px; height: 64px; font-size: 2rem;"
+                     th:classappend="${attempt.passed ? 'emerald' : 'rose'}">
+                    <i th:class="${attempt.passed ? 'bi bi-check-circle-fill' : 'bi bi-x-circle-fill'}"></i>
+                </div>
+
+                <span class="badge rounded-pill px-3 py-1 mb-2"
+                      th:classappend="${attempt.passed ? 'bg-success-subtle text-success' : 'bg-danger-subtle text-danger'}"
+                      th:text="${attempt.passed ? 'PASSED ASSESSMENT' : 'NEEDS IMPROVEMENT'}">PASSED</span>
+
+                <h3 class="fw-bold text-dark mb-1" th:text="${quiz.title}">DSA Mid-Term Online Assessment</h3>
+                <p class="text-muted small mb-4" th:text="${quiz.subject.name}">Data Structures</p>
+
+                <div class="row g-3 justify-content-center mb-4">
+                    <div class="col-4">
+                        <div class="p-3 bg-light rounded-2 border">
+                            <span class="text-muted small d-block">Score Obtained</span>
+                            <h2 class="fw-bold text-primary m-0" th:text="${attempt.score}">18.0</h2>
+                            <small class="text-muted" th:text="'out of ' + ${quiz.totalMarks}">out of 20</small>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="p-3 bg-light rounded-2 border">
+                            <span class="text-muted small d-block">Passing Score</span>
+                            <h2 class="fw-bold text-dark m-0" th:text="${quiz.passingMarks}">8.0</h2>
+                            <small class="text-muted">Minimum Required</small>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="p-3 bg-light rounded-2 border">
+                            <span class="text-muted small d-block">Evaluation</span>
+                            <h2 class="fw-bold m-0" th:classappend="${attempt.evaluated ? 'text-success' : 'text-warning'}"
+                                th:text="${attempt.evaluated ? 'Done' : 'Review'}">Done</h2>
+                            <small class="text-muted" th:text="${attempt.evaluated ? 'Complete' : 'Subjective Pending'}">Status</small>
+                        </div>
+                    </div>
+                </div>
+
+                <div th:if="${attempt.teacherFeedback != null and !#strings.isEmpty(attempt.teacherFeedback)}" class="text-start p-3 bg-light rounded-2 border mb-4">
+                    <label class="fw-bold text-dark small d-block mb-1"><i class="bi bi-chat-quote-fill text-primary me-1"></i> Instructor Feedback:</label>
+                    <span class="text-muted small" th:text="${attempt.teacherFeedback}">Feedback remarks...</span>
+                </div>
+
+                <div class="d-flex justify-content-center gap-3">
+                    <a th:href="@{/student/quizzes}" class="btn btn-saas-outline">
+                        <i class="bi bi-arrow-left me-1"></i> Back to Quizzes
+                    </a>
+                    <a th:href="@{/student/results}" class="btn btn-saas-primary">
+                        <i class="bi bi-award me-1"></i> View All My Results
+                    </a>
+                </div>
+            </div>
+
+            <!-- Question Review Breakdown (if teacher released results) -->
+            <div th:if="${quiz.resultsReleased and !#lists.isEmpty(answers)}" class="saas-card mx-auto" style="max-width: 800px;">
+                <div class="card-header-clean">
+                    <h6 class="card-title-clean">Question Review & Correct Answers</h6>
+                </div>
+                <div class="card-body-clean d-flex flex-column gap-3">
+                    <div th:each="ans, iter : ${answers}" class="card border p-3 rounded-2 shadow-none">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="badge bg-dark rounded-pill" th:text="'Q' + ${iter.count}">Q1</span>
+                                <span class="badge bg-secondary-subtle text-secondary" th:text="${ans.question.questionType.displayName}">MCQ</span>
+                            </div>
+                            <span class="badge bg-light text-dark border" th:text="${ans.marksAwarded} + ' / ' + ${ans.question.marks} + ' Marks'">5 / 5 Marks</span>
+                        </div>
+
+                        <p class="fw-bold text-dark mb-2" th:text="${ans.question.questionText}">Question prompt</p>
+
+                        <!-- Choices -->
+                        <div th:if="${ans.question.questionType.name() != 'SHORT_ANSWER'}" class="row g-2 mb-2">
+                            <div th:each="opt : ${ans.question.options}" class="col-md-6">
+                                <div class="p-2 border rounded small d-flex align-items-center gap-2"
+                                     th:classappend="${opt.correct ? 'bg-success-subtle border-success text-success fw-bold' : (ans.selectedOptionIds != null and ans.selectedOptionIds.contains(opt.id.toString()) ? 'bg-danger-subtle border-danger text-danger' : 'bg-light text-muted')}">
+                                    <i th:class="${opt.correct ? 'bi bi-check-circle-fill' : (ans.selectedOptionIds != null and ans.selectedOptionIds.contains(opt.id.toString()) ? 'bi bi-x-circle-fill' : 'bi bi-circle')}"></i>
+                                    <span th:text="${opt.optionText}">Option text</span>
+                                    <span th:if="${opt.correct}" class="ms-auto badge bg-success text-white small" style="font-size: 0.65rem;">Correct</span>
+                                    <span th:if="${!opt.correct and ans.selectedOptionIds != null and ans.selectedOptionIds.contains(opt.id.toString())}" class="ms-auto badge bg-danger text-white small" style="font-size: 0.65rem;">Your Choice</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Short Answer Response -->
+                        <div th:if="${ans.question.questionType.name() == 'SHORT_ANSWER'}" class="bg-light p-2 rounded small text-dark mb-2 font-monospace"
+                             th:text="${ans.textAnswer != null ? ans.textAnswer : '[No answer entered]'}">
+                            Written Answer
+                        </div>
+
+                        <div th:if="${ans.question.explanation != null and !#strings.isEmpty(ans.question.explanation)}" class="small text-muted border-top pt-2">
+                            <strong>Explanation:</strong> <span th:text="${ans.question.explanation}">Explanation notes</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+</html>

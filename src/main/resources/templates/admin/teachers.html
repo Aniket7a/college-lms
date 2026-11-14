@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Teacher Management')}"></head>
+<body>
+<div class="app-wrapper">
+    <div th:replace="~{fragments/layout :: sidebar('teachers')}"></div>
+
+    <div class="app-main">
+        <div th:replace="~{fragments/layout :: navbar('Teacher Management', null)}"></div>
+
+        <div class="app-content">
+            <div th:replace="~{fragments/layout :: alerts}"></div>
+
+            <div class="saas-card">
+                <div class="card-header-clean">
+                    <div>
+                        <h6 class="card-title-clean">Faculty Directory</h6>
+                        <p class="card-subtitle-clean">Professors, lecturers, and teaching staff</p>
+                    </div>
+                    <div>
+                        <button type="button" class="btn btn-saas-primary" data-bs-toggle="modal" data-bs-target="#addTeacherModal">
+                            <i class="bi bi-person-plus-fill me-1"></i> Add Faculty
+                        </button>
+                    </div>
+                </div>
+
+                <div class="card-body-clean p-0">
+                    <div class="table-responsive">
+                        <table class="table-clean">
+                            <thead>
+                                <tr>
+                                    <th>Employee ID</th>
+                                    <th>Faculty Name</th>
+                                    <th>Department</th>
+                                    <th>Designation</th>
+                                    <th>Qualification</th>
+                                    <th>Specialization</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="t : ${teachers}">
+                                    <td>
+                                        <span class="badge bg-light text-dark border font-monospace" th:text="${t.employeeId}">EMP-101</span>
+                                    </td>
+                                    <td>
+                                        <div class="fw-bold text-dark" th:text="${t.user.fullName}">Dr. Rajesh Sharma</div>
+                                        <small class="text-muted" th:text="${t.user.email}">sharma@college.edu</small>
+                                    </td>
+                                    <td th:text="${t.department != null ? t.department.code : 'N/A'}">CSE</td>
+                                    <td class="fw-semibold text-dark" th:text="${t.designation}">Professor</td>
+                                    <td class="small text-muted" th:text="${t.qualification}">Ph.D.</td>
+                                    <td class="small" th:text="${t.specialization}">Algorithms</td>
+                                    <td>
+                                        <span class="badge" th:classappend="${t.user.active} ? 'bg-success-subtle text-success' : 'bg-danger-subtle text-danger'"
+                                              th:text="${t.user.active} ? 'Active' : 'Deactivated'">Active</span>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <a th:href="@{/admin/teachers/{id}(id=${t.id})}" class="btn btn-sm btn-outline-primary py-1 px-2" title="View Profile">
+                                                <i class="bi bi-eye"></i> Profile
+                                            </a>
+                                            <form th:action="@{/admin/teachers/{id}/toggle-status(id=${t.id})}" method="post" class="d-inline">
+                                                <button type="submit" class="btn btn-sm btn-light border py-1 px-2"
+                                                        th:title="${t.user.active} ? 'Deactivate' : 'Activate'">
+                                                    <i th:class="${t.user.active} ? 'bi bi-person-x text-danger' : 'bi bi-person-check text-success'"></i>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Teacher Modal -->
+<div class="modal fade" id="addTeacherModal" tabindex="-1" aria-labelledby="addTeacherModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content" style="border-radius: 14px;">
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold" id="addTeacherModalLabel"><i class="bi bi-person-badge-fill text-primary me-2"></i>Register Faculty Member</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form th:action="@{/admin/teachers/create}" method="post">
+                <div class="modal-body p-4">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label small fw-semibold">Full Name *</label>
+                            <input type="text" class="form-control" name="fullName" placeholder="e.g. Dr. Arthur Dent" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-semibold">Faculty Email *</label>
+                            <input type="email" class="form-control" name="email" placeholder="arthur@college.edu" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-semibold">Initial Password *</label>
+                            <input type="password" class="form-control" name="password" placeholder="••••••••" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-semibold">Phone Number</label>
+                            <input type="tel" class="form-control" name="phone" placeholder="+1-555-0188">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-semibold">Employee ID *</label>
+                            <input type="text" class="form-control" name="employeeId" placeholder="EMP-CSE-105" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-semibold">Department *</label>
+                            <select class="form-select" name="departmentId" required>
+                                <option value="" disabled selected>Select Department</option>
+                                <option th:each="d : ${departments}" th:value="${d.id}" th:text="${d.name + ' (' + d.code + ')'}"></option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label small fw-semibold">Designation *</label>
+                            <input type="text" class="form-control" name="designation" placeholder="e.g. Assistant Professor" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label small fw-semibold">Qualification *</label>
+                            <input type="text" class="form-control" name="qualification" placeholder="e.g. Ph.D. in CS" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label small fw-semibold">Specialization</label>
+                            <input type="text" class="form-control" name="specialization" placeholder="e.g. Machine Learning">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-saas-outline" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-saas-primary">Create Faculty Account</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+</html>

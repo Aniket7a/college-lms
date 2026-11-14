@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Academic Performance & Results')}"></head>
+<body>
+<div class="app-wrapper">
+    <div th:replace="~{fragments/layout :: sidebar('results')}"></div>
+
+    <div class="app-main">
+        <div th:replace="~{fragments/layout :: navbar('Academic Results & Standing', null)}"></div>
+
+        <div class="app-content">
+            <div th:replace="~{fragments/layout :: alerts}"></div>
+
+            <!-- Header Performance Banner -->
+            <div class="saas-card bg-primary text-white p-4 mb-4" style="background: linear-gradient(135deg, #0F172A 0%, #1E3A8A 100%) !important;">
+                <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+                    <div>
+                        <span class="badge bg-primary-subtle text-primary border-0 mb-2">Official Transcript & Record</span>
+                        <h4 class="fw-bold mb-1" th:text="${student.user.fullName} + ' - Academic Performance'">Aarav Patel</h4>
+                        <div class="text-light small" style="opacity: 0.85;">
+                            Roll Number: <strong class="text-white" th:text="${student.rollNumber}">2024-CS-001</strong> &bull;
+                            <span th:text="${student.course != null ? student.course.name : ''}">B.Tech Computer Science</span> &bull;
+                            <span th:text="'Semester ' + ${student.currentSemester}">Sem 3</span>
+                        </div>
+                    </div>
+                    <div class="text-end">
+                        <span class="text-light small d-block" style="opacity: 0.85;">Overall Academic Grade</span>
+                        <h1 class="fw-bold text-white m-0" th:text="${performance.grade}">A+</h1>
+                    </div>
+                </div>
+            </div>
+
+            <!-- KPI Cards -->
+            <div class="row g-3 mb-4">
+                <div class="col-xl-3 col-sm-6">
+                    <div class="stat-card">
+                        <div class="stat-icon emerald"><i class="bi bi-award-fill"></i></div>
+                        <div>
+                            <div class="stat-val" th:text="${performance.overallPercentage} + '%'">92.5%</div>
+                            <div class="stat-label">Cumulative Percentage</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-sm-6">
+                    <div class="stat-card">
+                        <div class="stat-icon blue"><i class="bi bi-calculator-fill"></i></div>
+                        <div>
+                            <div class="stat-val" th:text="${performance.totalObtained} + ' / ' + ${performance.totalMax}">119 / 130</div>
+                            <div class="stat-label">Total Obtained Marks</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-sm-6">
+                    <div class="stat-card">
+                        <div class="stat-icon purple"><i class="bi bi-star-fill"></i></div>
+                        <div>
+                            <div class="stat-val" th:text="${performance.grade}">A+</div>
+                            <div class="stat-label">Letter Grade</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-sm-6">
+                    <div class="stat-card">
+                        <div class="stat-icon amber"><i class="bi bi-check-all"></i></div>
+                        <div>
+                            <div class="stat-val" th:text="${marksList.size()}">5</div>
+                            <div class="stat-label">Evaluated Assessments</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Analytics Chart Row -->
+            <div class="row g-4 mb-4">
+                <div class="col-lg-8">
+                    <div class="saas-card h-100">
+                        <div class="card-header-clean">
+                            <h6 class="card-title-clean">Subject-Wise Performance Scores (%)</h6>
+                        </div>
+                        <div class="card-body-clean">
+                            <canvas id="subjectBreakdownChart" height="120"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="saas-card h-100">
+                        <div class="card-header-clean">
+                            <h6 class="card-title-clean">Assessment Weightage Distribution</h6>
+                        </div>
+                        <div class="card-body-clean d-flex align-items-center justify-content-center">
+                            <canvas id="assessmentTypeChart" height="200"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dedicated Marks Table -->
+            <div class="saas-card">
+                <div class="card-header-clean">
+                    <div>
+                        <h6 class="card-title-clean">Official Academic Assessment Marks Table</h6>
+                        <p class="card-subtitle-clean">Itemized evaluation breakdown across assignments, quizzes, practicals, and internal exams.</p>
+                    </div>
+                </div>
+
+                <div class="card-body-clean p-0">
+                    <div th:if="${#lists.isEmpty(marksList)}" class="text-center py-5 text-muted small">
+                        No evaluated marks published yet for your account.
+                    </div>
+                    <div class="table-responsive" th:unless="${#lists.isEmpty(marksList)}">
+                        <table class="table-clean">
+                            <thead>
+                                <tr>
+                                    <th>Subject</th>
+                                    <th>Assessment</th>
+                                    <th>Category</th>
+                                    <th>Maximum Marks</th>
+                                    <th>Obtained Marks</th>
+                                    <th>Percentage</th>
+                                    <th>Status</th>
+                                    <th>Teacher Remarks</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="m : ${marksList}">
+                                    <td>
+                                        <span class="badge bg-light text-dark border font-monospace" th:text="${m.assessment.subject.code}">CS301</span>
+                                        <div class="small fw-semibold text-dark" th:text="${m.assessment.subject.name}">Data Structures</div>
+                                    </td>
+                                    <td class="fw-bold text-dark" th:text="${m.assessment.title}">Assignment 1</td>
+                                    <td>
+                                        <span class="badge bg-secondary-subtle text-secondary" th:text="${m.assessment.assessmentType.displayName}">Assignment</span>
+                                    </td>
+                                    <td class="text-muted fw-semibold" th:text="${m.assessment.maxMarks}">20</td>
+                                    <td>
+                                        <span class="fw-bold fs-6 text-primary" th:text="${m.marksObtained}">18.5</span>
+                                    </td>
+                                    <td>
+                                        <span class="badge"
+                                              th:classappend="${m.percentage >= 75 ? 'bg-success-subtle text-success' : 'bg-warning-subtle text-warning'}"
+                                              th:text="${#numbers.formatDecimal(m.percentage, 1, 1)} + '%'">92.5%</span>
+                                    </td>
+                                    <td>
+                                        <span class="badge-status badge-evaluated">Evaluated</span>
+                                    </td>
+                                    <td>
+                                        <small class="text-muted text-truncate d-inline-block" style="max-width: 220px;"
+                                               th:text="${m.teacherRemarks != null ? m.teacherRemarks : '-'}">Remarks</small>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div th:replace="~{fragments/layout :: scripts}"></div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const ctxSubj = document.getElementById('subjectBreakdownChart');
+        if (ctxSubj) {
+            new Chart(ctxSubj, {
+                type: 'bar',
+                data: {
+                    labels: ['Data Structures & Algorithms', 'Database Management Systems', 'Web Tech & Cloud'],
+                    datasets: [{
+                        label: 'My Obtained %',
+                        data: [93.1, 90.0, 88.5],
+                        backgroundColor: '#2563EB',
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: { beginAtZero: true, max: 100 }
+                    }
+                }
+            });
+        }
+
+        const ctxType = document.getElementById('assessmentTypeChart');
+        if (ctxType) {
+            new Chart(ctxType, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Assignments', 'Quizzes', 'Practicals', 'Internal Tests', 'Participation'],
+                    datasets: [{
+                        data: [20, 20, 30, 40, 10],
+                        backgroundColor: ['#2563EB', '#8B5CF6', '#10B981', '#F59E0B', '#0EA5E9']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom', labels: { boxWidth: 10 } }
+                    },
+                    cutout: '65%'
+                }
+            });
+        }
+    });
+</script>
+</body>
+</html>

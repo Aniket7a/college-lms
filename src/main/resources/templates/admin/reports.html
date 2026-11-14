@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Institutional Reports')}"></head>
+<body>
+<div class="app-wrapper">
+    <div th:replace="~{fragments/layout :: sidebar('reports')}"></div>
+
+    <div class="app-main">
+        <div th:replace="~{fragments/layout :: navbar('Academic & Performance Reports', null)}"></div>
+
+        <div class="app-content">
+            <div th:replace="~{fragments/layout :: alerts}"></div>
+
+            <!-- Charts Row -->
+            <div class="row g-4 mb-4">
+                <div class="col-lg-6">
+                    <div class="saas-card h-100">
+                        <div class="card-header-clean">
+                            <h6 class="card-title-clean">Subject Average Performance (%)</h6>
+                        </div>
+                        <div class="card-body-clean">
+                            <canvas id="subjectPerformanceChart" height="150"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="saas-card h-100">
+                        <div class="card-header-clean">
+                            <h6 class="card-title-clean">Assignment Submission & Grading Ratio</h6>
+                        </div>
+                        <div class="card-body-clean">
+                            <canvas id="submissionRatioChart" height="150"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Student Performance Summary Table -->
+            <div class="saas-card mb-4">
+                <div class="card-header-clean">
+                    <div>
+                        <h6 class="card-title-clean">Cohort Performance Overview</h6>
+                        <p class="card-subtitle-clean">Cumulative student performance and standing</p>
+                    </div>
+                </div>
+                <div class="card-body-clean p-0">
+                    <div class="table-responsive">
+                        <table class="table-clean">
+                            <thead>
+                                <tr>
+                                    <th>Roll Number</th>
+                                    <th>Student</th>
+                                    <th>Department</th>
+                                    <th>Course</th>
+                                    <th>Enrolled Subjects</th>
+                                    <th>Standing</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="s : ${students}">
+                                    <td><span class="badge bg-light text-dark border font-monospace" th:text="${s.rollNumber}">2024-CS-001</span></td>
+                                    <td>
+                                        <div class="fw-bold text-dark" th:text="${s.user.fullName}">Aarav Patel</div>
+                                        <small class="text-muted" th:text="${s.user.email}">email</small>
+                                    </td>
+                                    <td th:text="${s.department != null ? s.department.code : 'N/A'}">CSE</td>
+                                    <td th:text="${s.course != null ? s.course.name : 'N/A'}">B.Tech</td>
+                                    <td><span class="badge bg-primary-subtle text-primary" th:text="${s.enrollments.size()} + ' Subjects'">3 Subjects</span></td>
+                                    <td>
+                                        <span class="badge bg-success-subtle text-success"><i class="bi bi-arrow-up-right me-1"></i>Good Standing</span>
+                                    </td>
+                                    <td>
+                                        <a th:href="@{/admin/students/{id}(id=${s.id})}" class="btn btn-sm btn-outline-primary py-1 px-2">
+                                            <i class="bi bi-graph-up"></i> Full Report
+                                        </a>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Teacher Activity Table -->
+            <div class="saas-card">
+                <div class="card-header-clean">
+                    <h6 class="card-title-clean">Faculty Teaching Load & Activity Summary</h6>
+                </div>
+                <div class="card-body-clean p-0">
+                    <table class="table-clean">
+                        <thead>
+                            <tr>
+                                <th>Faculty Member</th>
+                                <th>Department</th>
+                                <th>Assigned Subjects</th>
+                                <th>Designation</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="t : ${teachers}">
+                                <td class="fw-bold text-dark" th:text="${t.user.fullName}">Dr. Rajesh Sharma</td>
+                                <td th:text="${t.department != null ? t.department.code : 'N/A'}">CSE</td>
+                                <td>
+                                    <span class="badge bg-light text-dark border font-monospace">Active Faculty</span>
+                                </td>
+                                <td th:text="${t.designation}">Professor</td>
+                                <td><span class="badge bg-success-subtle text-success">Active</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div th:replace="~{fragments/layout :: scripts}"></div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const ctxPerf = document.getElementById('subjectPerformanceChart');
+        if (ctxPerf) {
+            new Chart(ctxPerf, {
+                type: 'bar',
+                data: {
+                    labels: ['Data Structures', 'DBMS', 'Web Tech', 'Computer Networks'],
+                    datasets: [{
+                        label: 'Average Score (%)',
+                        data: [88.5, 84.0, 91.2, 79.5],
+                        backgroundColor: '#2563EB',
+                        borderRadius: 6
+                    }, {
+                        label: 'Passing Rate (%)',
+                        data: [96, 92, 98, 90],
+                        backgroundColor: '#10B981',
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: { beginAtZero: true, max: 100 }
+                    }
+                }
+            });
+        }
+
+        const ctxSub = document.getElementById('submissionRatioChart');
+        if (ctxSub) {
+            new Chart(ctxSub, {
+                type: 'line',
+                data: {
+                    labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4', 'Week 5', 'Week 6'],
+                    datasets: [{
+                        label: 'Submissions Received',
+                        data: [12, 19, 25, 32, 28, 35],
+                        borderColor: '#2563EB',
+                        backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                        fill: true,
+                        tension: 0.3
+                    }, {
+                        label: 'Evaluations Completed',
+                        data: [10, 18, 22, 30, 27, 33],
+                        borderColor: '#10B981',
+                        borderDash: [5, 5],
+                        tension: 0.3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: { beginAtZero: true }
+                    }
+                }
+            });
+        }
+    });
+</script>
+</body>
+</html>

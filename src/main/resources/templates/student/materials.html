@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Study Materials Library')}"></head>
+<body>
+<div class="app-wrapper">
+    <div th:replace="~{fragments/layout :: sidebar('materials')}"></div>
+
+    <div class="app-main">
+        <div th:replace="~{fragments/layout :: navbar('Digital Learning Resources', null)}"></div>
+
+        <div class="app-content">
+            <div th:replace="~{fragments/layout :: alerts}"></div>
+
+            <div class="saas-card">
+                <div class="card-header-clean">
+                    <div>
+                        <h6 class="card-title-clean">Course Study Materials & Resources</h6>
+                        <p class="card-subtitle-clean">Download lecture slides, lecture notes, syllabus blueprints, and reference texts.</p>
+                    </div>
+                </div>
+
+                <div class="card-body-clean p-0">
+                    <div th:if="${#lists.isEmpty(materials)}" class="text-center py-5 text-muted small">
+                        No learning materials shared yet.
+                    </div>
+                    <div class="list-group list-group-flush" th:unless="${#lists.isEmpty(materials)}">
+                        <div th:each="m : ${materials}" class="list-group-item p-3 d-flex justify-content-between align-items-center">
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="stat-icon blue" style="width: 44px; height: 44px; font-size: 1.3rem;">
+                                    <i class="bi bi-file-earmark-pdf-fill"></i>
+                                </div>
+                                <div>
+                                    <div class="d-flex align-items-center gap-2 mb-1">
+                                        <span class="badge bg-light text-dark border font-monospace" th:text="${m.subject.code}">CS301</span>
+                                        <span class="badge bg-secondary-subtle text-secondary" th:text="${m.materialType}">NOTES</span>
+                                    </div>
+                                    <h6 class="mb-1 fw-bold text-dark" th:text="${m.title}">Notes Title</h6>
+                                    <p class="mb-1 text-muted small" th:text="${m.description}">Description</p>
+                                    <div class="d-flex gap-2 small text-muted">
+                                        <span class="text-dark fw-semibold" th:text="${m.fileName}">File.pdf</span> &bull;
+                                        <span th:text="${m.fileSize}">2.4 MB</span> &bull;
+                                        <span th:text="${#temporals.format(m.uploadDate, 'dd MMM yyyy')}">Date</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <a th:href="@{${m.fileUrl}}" target="_blank" class="btn btn-sm btn-outline-primary py-2 px-3">
+                                <i class="bi bi-download me-1"></i> Download
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+</html>

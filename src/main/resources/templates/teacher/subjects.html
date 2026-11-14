@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('My Assigned Subjects')}"></head>
+<body>
+<div class="app-wrapper">
+    <div th:replace="~{fragments/layout :: sidebar('subjects')}"></div>
+
+    <div class="app-main">
+        <div th:replace="~{fragments/layout :: navbar('My Assigned Subjects', null)}"></div>
+
+        <div class="app-content">
+            <div th:replace="~{fragments/layout :: alerts}"></div>
+
+            <div class="row g-4">
+                <div class="col-md-6 col-lg-4" th:each="s : ${subjects}">
+                    <div class="saas-card h-100 d-flex flex-column">
+                        <div class="card-header-clean">
+                            <span class="badge bg-primary-subtle text-primary font-monospace" th:text="${s.code}">CS301</span>
+                            <span class="badge bg-secondary-subtle text-secondary" th:text="${s.credits} + ' Credits'">4 Credits</span>
+                        </div>
+                        <div class="card-body-clean flex-grow-1">
+                            <h5 class="fw-bold text-dark mb-2" th:text="${s.name}">Data Structures & Algorithms</h5>
+                            <p class="text-muted small mb-3" style="min-height: 40px;" th:text="${s.description}">Comprehensive study of data structures...</p>
+
+                            <div class="d-flex justify-content-between small text-muted border-top pt-2 mb-3">
+                                <span><i class="bi bi-mortarboard me-1"></i> <span th:text="${s.course != null ? s.course.name : 'N/A'}">B.Tech</span></span>
+                                <span><i class="bi bi-calendar3 me-1"></i> <span th:text="'Sem ' + ${s.semester}">Sem 3</span></span>
+                            </div>
+
+                            <div class="bg-light p-2 rounded-2 d-flex justify-content-around text-center small">
+                                <div>
+                                    <div class="fw-bold text-dark" th:text="${s.enrollments.size()}">28</div>
+                                    <span class="text-muted" style="font-size: 0.7rem;">Students</span>
+                                </div>
+                                <div class="border-start"></div>
+                                <div>
+                                    <div class="fw-bold text-dark" th:text="${s.assignments.size()}">3</div>
+                                    <span class="text-muted" style="font-size: 0.7rem;">Assignments</span>
+                                </div>
+                                <div class="border-start"></div>
+                                <div>
+                                    <div class="fw-bold text-dark" th:text="${s.quizzes.size()}">2</div>
+                                    <span class="text-muted" style="font-size: 0.7rem;">Quizzes</span>
+                                </div>
+                                <div class="border-start"></div>
+                                <div>
+                                    <div class="fw-bold text-dark" th:text="${s.practicals.size()}">2</div>
+                                    <span class="text-muted" style="font-size: 0.7rem;">Labs</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="p-3 border-top bg-light rounded-bottom-4 text-end">
+                            <a th:href="@{/teacher/subjects/{id}(id=${s.id})}" class="btn btn-sm btn-saas-primary w-100">
+                                Open Subject Portal <i class="bi bi-arrow-right ms-1"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+</html>

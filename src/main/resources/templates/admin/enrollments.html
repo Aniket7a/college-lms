@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Enrollment Management')}"></head>
+<body>
+<div class="app-wrapper">
+    <div th:replace="~{fragments/layout :: sidebar('enrollments')}"></div>
+
+    <div class="app-main">
+        <div th:replace="~{fragments/layout :: navbar('Subject Enrollments', null)}"></div>
+
+        <div class="app-content">
+            <div th:replace="~{fragments/layout :: alerts}"></div>
+
+            <div class="row g-4 mb-4">
+                <div class="col-lg-4">
+                    <div class="saas-card">
+                        <div class="card-header-clean">
+                            <h6 class="card-title-clean">Enroll Student into Subject</h6>
+                        </div>
+                        <div class="card-body-clean">
+                            <form th:action="@{/admin/enrollments/assign}" method="post">
+                                <div class="mb-3">
+                                    <label class="form-label small fw-semibold">Select Student *</label>
+                                    <select class="form-select" name="studentId" required>
+                                        <option value="" disabled selected>Select Student</option>
+                                        <option th:each="s : ${students}" th:value="${s.id}"
+                                                th:text="${s.user.fullName + ' (' + s.rollNumber + ' - ' + (s.department != null ? s.department.code : '') + ')'}"></option>
+                                    </select>
+                                </div>
+                                <div class="mb-4">
+                                    <label class="form-label small fw-semibold">Select Subject *</label>
+                                    <select class="form-select" name="subjectId" required>
+                                        <option value="" disabled selected>Select Subject</option>
+                                        <option th:each="sub : ${subjects}" th:value="${sub.id}"
+                                                th:text="${sub.code + ' - ' + sub.name + ' (Sem ' + sub.semester + ')'}"></option>
+                                    </select>
+                                </div>
+                                <button type="submit" class="btn btn-saas-primary w-100">
+                                    <i class="bi bi-person-check-fill me-1"></i> Confirm Enrollment
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-8">
+                    <div class="saas-card">
+                        <div class="card-header-clean">
+                            <div>
+                                <h6 class="card-title-clean">Active Subject Enrollments</h6>
+                                <p class="card-subtitle-clean">Curriculum breakdown by subject</p>
+                            </div>
+                        </div>
+                        <div class="card-body-clean p-0">
+                            <div class="accordion accordion-flush" id="subjectAccordion">
+                                <div class="accordion-item" th:each="sub, iter : ${subjects}">
+                                    <h2 class="accordion-header">
+                                        <button class="accordion-button" th:classappend="${iter.first} ? '' : 'collapsed'" type="button"
+                                                data-bs-toggle="collapse" th:data-bs-target="'#collapse' + ${sub.id}">
+                                            <div class="d-flex justify-content-between align-items-center w-100 me-3">
+                                                <div>
+                                                    <span class="badge bg-light text-dark border font-monospace me-2" th:text="${sub.code}">CS301</span>
+                                                    <strong class="text-dark" th:text="${sub.name}">Data Structures</strong>
+                                                    <span class="text-muted small ms-2" th:text="'(Instructor: ' + (${sub.teacher != null ? sub.teacher.fullName : 'Unassigned'}) + ')'"></span>
+                                                </div>
+                                                <span class="badge bg-primary-subtle text-primary" th:text="${sub.enrollments.size()} + ' Enrolled'">0 Enrolled</span>
+                                            </div>
+                                        </button>
+                                    </h2>
+                                    <div th:id="'collapse' + ${sub.id}" class="accordion-collapse collapse" th:classappend="${iter.first} ? 'show'" data-bs-parent="#subjectAccordion">
+                                        <div class="accordion-body p-0">
+                                            <div th:if="${#lists.isEmpty(sub.enrollments)}" class="text-center py-3 text-muted small">
+                                                No students enrolled yet in this subject.
+                                            </div>
+                                            <table class="table-clean" th:unless="${#lists.isEmpty(sub.enrollments)}">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Roll Number</th>
+                                                        <th>Student Name</th>
+                                                        <th>Department</th>
+                                                        <th>Enrollment Date</th>
+                                                        <th>Status</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr th:each="e : ${sub.enrollments}">
+                                                        <td><span class="badge bg-light text-dark border font-monospace" th:text="${e.student.rollNumber}">2024-CS-001</span></td>
+                                                        <td class="fw-semibold text-dark" th:text="${e.student.user.fullName}">Name</td>
+                                                        <td th:text="${e.student.department != null ? e.student.department.code : 'N/A'}">CSE</td>
+                                                        <td class="text-muted small" th:text="${e.enrollmentDate}">2026-08-15</td>
+                                                        <td><span class="badge bg-success-subtle text-success" th:text="${e.status}">ACTIVE</span></td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+</html>

@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head(${subject.name} + ' (' + ${subject.code} + ')')}"></head>
+<body>
+<div class="app-wrapper">
+    <div th:replace="~{fragments/layout :: sidebar('subjects')}"></div>
+
+    <div class="app-main">
+        <div th:replace="~{fragments/layout :: navbar(${subject.name}, null)}"></div>
+
+        <div class="app-content">
+            <div th:replace="~{fragments/layout :: alerts}"></div>
+
+            <!-- Subject Header Card -->
+            <div class="saas-card p-4 mb-4">
+                <div class="d-flex flex-wrap justify-content-between align-items-start gap-3">
+                    <div>
+                        <div class="d-flex align-items-center gap-2 mb-2">
+                            <span class="badge bg-primary-subtle text-primary font-monospace fs-6 px-3 py-1" th:text="${subject.code}">CS301</span>
+                            <span class="badge bg-secondary-subtle text-secondary" th:text="'Semester ' + ${subject.semester}">Sem 3</span>
+                            <span class="badge bg-light text-dark border" th:text="${subject.credits} + ' Credits'">4 Credits</span>
+                        </div>
+                        <h4 class="fw-bold text-dark mb-1" th:text="${subject.name}">Data Structures & Algorithms</h4>
+                        <p class="text-muted small mb-0" th:text="${subject.description}">Description</p>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <a th:href="@{/teacher/marks(subjectId=${subject.id})}" class="btn btn-saas-primary btn-sm">
+                            <i class="bi bi-award me-1"></i> Open Marks Sheet
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Navigation Tabs -->
+            <ul class="nav nav-pills mb-4 gap-2" id="subjectTab" role="tablist">
+                <li class="nav-item">
+                    <button class="nav-link active px-4 py-2 fw-semibold" id="materials-tab" data-bs-toggle="pill" data-bs-target="#materials" type="button">
+                        <i class="bi bi-folder-fill me-1"></i> Study Materials (<span th:text="${materials.size()}">0</span>)
+                    </button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link px-4 py-2 fw-semibold" id="assignments-tab" data-bs-toggle="pill" data-bs-target="#assignments" type="button">
+                        <i class="bi bi-file-earmark-text-fill me-1"></i> Assignments (<span th:text="${assignments.size()}">0</span>)
+                    </button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link px-4 py-2 fw-semibold" id="quizzes-tab" data-bs-toggle="pill" data-bs-target="#quizzes" type="button">
+                        <i class="bi bi-patch-question-fill me-1"></i> Quizzes (<span th:text="${quizzes.size()}">0</span>)
+                    </button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link px-4 py-2 fw-semibold" id="practicals-tab" data-bs-toggle="pill" data-bs-target="#practicals" type="button">
+                        <i class="bi bi-cpu-fill me-1"></i> Practicals (<span th:text="${practicals.size()}">0</span>)
+                    </button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link px-4 py-2 fw-semibold" id="students-tab" data-bs-toggle="pill" data-bs-target="#students" type="button">
+                        <i class="bi bi-people-fill me-1"></i> Enrolled Students (<span th:text="${enrollments.size()}">0</span>)
+                    </button>
+                </li>
+            </ul>
+
+            <!-- Tab Content -->
+            <div class="tab-content" id="subjectTabContent">
+                <!-- TAB 1: Study Materials -->
+                <div class="tab-pane fade show active" id="materials" role="tabpanel">
+                    <div class="saas-card">
+                        <div class="card-header-clean">
+                            <h6 class="card-title-clean">Shared Learning Materials & Notes</h6>
+                            <a th:href="@{/teacher/materials}" class="btn btn-sm btn-saas-outline"><i class="bi bi-cloud-arrow-up me-1"></i>Upload Material</a>
+                        </div>
+                        <div class="card-body-clean p-0">
+                            <div th:if="${#lists.isEmpty(materials)}" class="text-center py-5 text-muted small">
+                                No study materials uploaded yet.
+                            </div>
+                            <div class="list-group list-group-flush" th:unless="${#lists.isEmpty(materials)}">
+                                <div th:each="m : ${materials}" class="list-group-item p-3 d-flex justify-content-between align-items-center">
+                                    <div class="d-flex align-items-center gap-3">
+                                        <div class="stat-icon blue" style="width: 42px; height: 42px; font-size: 1.2rem;">
+                                            <i class="bi bi-file-earmark-pdf-fill"></i>
+                                        </div>
+                                        <div>
+                                            <h6 class="mb-1 fw-bold text-dark" th:text="${m.title}">Notes Title</h6>
+                                            <p class="mb-1 text-muted small" th:text="${m.description}">Description</p>
+                                            <div class="d-flex gap-2 small text-muted">
+                                                <span class="badge bg-secondary-subtle text-secondary" th:text="${m.materialType}">NOTES</span>
+                                                <span th:text="${m.fileSize}">2.4 MB</span> &bull;
+                                                <span th:text="${#temporals.format(m.uploadDate, 'dd MMM yyyy')}">Date</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <a th:href="@{${m.fileUrl}}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                        <i class="bi bi-download me-1"></i> Download
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB 2: Assignments -->
+                <div class="tab-pane fade" id="assignments" role="tabpanel">
+                    <div class="saas-card">
+                        <div class="card-header-clean">
+                            <h6 class="card-title-clean">Subject Assignments</h6>
+                            <a th:href="@{/teacher/assignments}" class="btn btn-sm btn-saas-primary"><i class="bi bi-plus-circle me-1"></i>Create Assignment</a>
+                        </div>
+                        <div class="card-body-clean p-0">
+                            <table class="table-clean">
+                                <thead>
+                                    <tr>
+                                        <th>Title</th>
+                                        <th>Due Date</th>
+                                        <th>Max Marks</th>
+                                        <th>Type</th>
+                                        <th>Submissions</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="a : ${assignments}">
+                                        <td>
+                                            <div class="fw-bold text-dark" th:text="${a.title}">AVL Tree</div>
+                                            <small class="text-muted text-truncate d-block" style="max-width: 300px;" th:text="${a.description}"></small>
+                                        </td>
+                                        <td class="small" th:text="${#temporals.format(a.dueDate, 'dd MMM yyyy, HH:mm')}">Date</td>
+                                        <td class="fw-bold" th:text="${a.maxMarks}">20</td>
+                                        <td><span class="badge bg-light text-dark border" th:text="${a.submissionType}">BOTH</span></td>
+                                        <td>
+                                            <span class="badge bg-primary-subtle text-primary" th:text="${a.submissions.size()} + ' Submitted'">1 Submitted</span>
+                                        </td>
+                                        <td>
+                                            <a th:href="@{/teacher/assignments/{id}/submissions(id=${a.id})}" class="btn btn-sm btn-outline-primary py-1 px-2">
+                                                <i class="bi bi-eye"></i> Submissions
+                                            </a>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB 3: Quizzes -->
+                <div class="tab-pane fade" id="quizzes" role="tabpanel">
+                    <div class="saas-card">
+                        <div class="card-header-clean">
+                            <h6 class="card-title-clean">Subject Online Quizzes</h6>
+                            <a th:href="@{/teacher/quizzes}" class="btn btn-sm btn-saas-primary"><i class="bi bi-plus-circle me-1"></i>Create Quiz</a>
+                        </div>
+                        <div class="card-body-clean p-0">
+                            <table class="table-clean">
+                                <thead>
+                                    <tr>
+                                        <th>Quiz Title</th>
+                                        <th>Duration</th>
+                                        <th>Questions</th>
+                                        <th>Total Marks</th>
+                                        <th>Pass Marks</th>
+                                        <th>Attempts</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="q : ${quizzes}">
+                                        <td class="fw-bold text-dark" th:text="${q.title}">Mid Term Quiz</td>
+                                        <td th:text="${q.durationMinutes} + ' mins'">20 mins</td>
+                                        <td th:text="${q.questions.size()}">4</td>
+                                        <td class="fw-bold" th:text="${q.totalMarks}">20</td>
+                                        <td th:text="${q.passingMarks}">8</td>
+                                        <td><span class="badge bg-primary-subtle text-primary" th:text="${q.attempts.size()} + ' Attempts'">1</span></td>
+                                        <td>
+                                            <div class="d-flex gap-2">
+                                                <a th:href="@{/teacher/quizzes/{id}/questions(id=${q.id})}" class="btn btn-sm btn-light border py-1 px-2">Questions</a>
+                                                <a th:href="@{/teacher/quizzes/{id}/attempts(id=${q.id})}" class="btn btn-sm btn-outline-primary py-1 px-2">Attempts</a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB 4: Practicals -->
+                <div class="tab-pane fade" id="practicals" role="tabpanel">
+                    <div class="saas-card">
+                        <div class="card-header-clean">
+                            <h6 class="card-title-clean">Laboratory Experiments</h6>
+                            <a th:href="@{/teacher/practicals}" class="btn btn-sm btn-saas-primary"><i class="bi bi-plus-circle me-1"></i>Create Practical</a>
+                        </div>
+                        <div class="card-body-clean p-0">
+                            <table class="table-clean">
+                                <thead>
+                                    <tr>
+                                        <th>Exp #</th>
+                                        <th>Experiment Title</th>
+                                        <th>Due Date</th>
+                                        <th>Max Marks</th>
+                                        <th>Rubric Components</th>
+                                        <th>Submissions</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="p : ${practicals}">
+                                        <td><span class="badge bg-light text-dark border font-monospace" th:text="${p.experimentNumber}">EXP-01</span></td>
+                                        <td class="fw-bold text-dark" th:text="${p.title}">BFS and DFS Graph Traversal</td>
+                                        <td class="small" th:text="${#temporals.format(p.dueDate, 'dd MMM yyyy')}">Date</td>
+                                        <td class="fw-bold" th:text="${p.maxMarks}">30</td>
+                                        <td th:text="${p.rubricComponents.size()} + ' Criteria'">4 Criteria</td>
+                                        <td><span class="badge bg-primary-subtle text-primary" th:text="${p.submissions.size()} + ' Submissions'">1</span></td>
+                                        <td>
+                                            <a th:href="@{/teacher/practicals/{id}/submissions(id=${p.id})}" class="btn btn-sm btn-outline-primary py-1 px-2">
+                                                <i class="bi bi-eye"></i> Submissions
+                                            </a>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB 5: Enrolled Students -->
+                <div class="tab-pane fade" id="students" role="tabpanel">
+                    <div class="saas-card">
+                        <div class="card-header-clean">
+                            <h6 class="card-title-clean">Enrolled Student Roster</h6>
+                        </div>
+                        <div class="card-body-clean p-0">
+                            <table class="table-clean">
+                                <thead>
+                                    <tr>
+                                        <th>Roll Number</th>
+                                        <th>Student Name</th>
+                                        <th>Department</th>
+                                        <th>Course</th>
+                                        <th>Semester</th>
+                                        <th>Enrollment Date</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="e : ${enrollments}">
+                                        <td><span class="badge bg-light text-dark border font-monospace" th:text="${e.student.rollNumber}">2024-CS-001</span></td>
+                                        <td class="fw-bold text-dark" th:text="${e.student.user.fullName}">Aarav Patel</td>
+                                        <td th:text="${e.student.department != null ? e.student.department.code : 'N/A'}">CSE</td>
+                                        <td th:text="${e.student.course != null ? e.student.course.name : 'N/A'}">B.Tech CS</td>
+                                        <td th:text="'Sem ' + ${e.student.currentSemester}">Sem 3</td>
+                                        <td class="text-muted small" th:text="${e.enrollmentDate}">2026-08-15</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+</html>

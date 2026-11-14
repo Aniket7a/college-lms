@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('My Enrolled Subjects')}"></head>
+<body>
+<div class="app-wrapper">
+    <div th:replace="~{fragments/layout :: sidebar('subjects')}"></div>
+
+    <div class="app-main">
+        <div th:replace="~{fragments/layout :: navbar('Enrolled Curriculum', null)}"></div>
+
+        <div class="app-content">
+            <div th:replace="~{fragments/layout :: alerts}"></div>
+
+            <div class="row g-4">
+                <div class="col-md-6 col-lg-4" th:each="e : ${enrollments}">
+                    <div class="saas-card h-100 d-flex flex-column">
+                        <div class="card-header-clean">
+                            <span class="badge bg-primary-subtle text-primary font-monospace" th:text="${e.subject.code}">CS301</span>
+                            <span class="badge bg-secondary-subtle text-secondary" th:text="${e.subject.credits} + ' Credits'">4 Credits</span>
+                        </div>
+                        <div class="card-body-clean flex-grow-1">
+                            <h5 class="fw-bold text-dark mb-2" th:text="${e.subject.name}">Data Structures</h5>
+                            <p class="text-muted small mb-3" style="min-height: 40px;" th:text="${e.subject.description}">Description</p>
+
+                            <div class="p-3 bg-light rounded-2 small mb-3">
+                                <div class="d-flex align-items-center gap-2 mb-1">
+                                    <i class="bi bi-person-badge text-primary"></i>
+                                    <span class="text-muted">Instructor:</span>
+                                    <strong class="text-dark" th:text="${e.subject.teacher != null ? e.subject.teacher.fullName : 'Unassigned'}">Dr. Rajesh Sharma</strong>
+                                </div>
+                                <div class="d-flex align-items-center gap-2">
+                                    <i class="bi bi-mortarboard text-muted"></i>
+                                    <span class="text-muted">Term:</span>
+                                    <span class="text-dark" th:text="'Semester ' + ${e.subject.semester}">Sem 3</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="p-3 border-top bg-light rounded-bottom-4">
+                            <a th:href="@{/student/subjects/{id}(id=${e.subject.id})}" class="btn btn-sm btn-saas-primary w-100">
+                                Open Subject Portal <i class="bi bi-arrow-right ms-1"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+</html>

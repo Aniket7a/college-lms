@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Online Quizzes')}"></head>
+<body>
+<div class="app-wrapper">
+    <div th:replace="~{fragments/layout :: sidebar('quizzes')}"></div>
+
+    <div class="app-main">
+        <div th:replace="~{fragments/layout :: navbar('Online Quizzes & Tests', null)}"></div>
+
+        <div class="app-content">
+            <div th:replace="~{fragments/layout :: alerts}"></div>
+
+            <div class="saas-card">
+                <div class="card-header-clean">
+                    <div>
+                        <h6 class="card-title-clean">Available Quizzes & Assessments</h6>
+                        <p class="card-subtitle-clean">Participate in scheduled tests, monitor countdown timers, and view your graded performance.</p>
+                    </div>
+                </div>
+
+                <div class="card-body-clean p-0">
+                    <div th:if="${#lists.isEmpty(quizzes)}" class="text-center py-5 text-muted small">
+                        No online quizzes scheduled for your enrolled subjects.
+                    </div>
+                    <div class="table-responsive" th:unless="${#lists.isEmpty(quizzes)}">
+                        <table class="table-clean">
+                            <thead>
+                                <tr>
+                                    <th>Subject</th>
+                                    <th>Quiz Title</th>
+                                    <th>Duration</th>
+                                    <th>Total Marks</th>
+                                    <th>Passing Marks</th>
+                                    <th>Schedule Window</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="q : ${quizzes}">
+                                    <td>
+                                        <span class="badge bg-light text-dark border font-monospace" th:text="${q.subject.code}">CS301</span>
+                                        <div class="small text-muted" th:text="${q.subject.name}">Data Structures</div>
+                                    </td>
+                                    <td>
+                                        <div class="fw-bold text-dark" th:text="${q.title}">DSA Mid-Term</div>
+                                        <small class="text-muted text-truncate d-block" style="max-width: 250px;" th:text="${q.description}"></small>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-light text-dark border"><i class="bi bi-clock me-1"></i> <span th:text="${q.durationMinutes} + 'm'">20m</span></span>
+                                    </td>
+                                    <td class="fw-bold text-dark" th:text="${q.totalMarks}">20</td>
+                                    <td class="text-muted" th:text="${q.passingMarks}">8</td>
+                                    <td class="small text-muted" th:text="${#temporals.format(q.endDateTime, 'dd MMM, HH:mm')}">Date</td>
+                                    <td>
+                                        <div th:if="${attemptMap.containsKey(q.id)}">
+                                            <span class="badge bg-success-subtle text-success">
+                                                <i class="bi bi-check-circle me-1"></i> Completed (<span th:text="${attemptMap.get(q.id).score} + ' pts'">18 pts</span>)
+                                            </span>
+                                        </div>
+                                        <div th:unless="${attemptMap.containsKey(q.id)}">
+                                            <span th:if="${q.expired}" class="badge bg-danger-subtle text-danger">Expired</span>
+                                            <span th:unless="${q.expired}" class="badge bg-primary-subtle text-primary">Ready to Attempt</span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div th:if="${attemptMap.containsKey(q.id)}">
+                                            <a th:href="@{/student/quizzes/{id}/result(id=${q.id})}" class="btn btn-sm btn-outline-primary py-1 px-3">
+                                                <i class="bi bi-award me-1"></i> View Result
+                                            </a>
+                                        </div>
+                                        <div th:unless="${attemptMap.containsKey(q.id)}">
+                                            <a th:if="${!q.expired}" th:href="@{/student/quizzes/{id}(id=${q.id})}" class="btn btn-sm btn-saas-primary py-1 px-3">
+                                                Start Quiz <i class="bi bi-arrow-right ms-1"></i>
+                                            </a>
+                                            <button th:if="${q.expired}" class="btn btn-sm btn-light border py-1 px-3 text-muted" disabled>Expired</button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+</html>

@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Student Record - ' + ${student.user.fullName})}"></head>
+<body>
+<div class="app-wrapper">
+    <div th:replace="~{fragments/layout :: sidebar('students')}"></div>
+
+    <div class="app-main">
+        <div th:replace="~{fragments/layout :: navbar('Student Profile & Academic Record', null)}"></div>
+
+        <div class="app-content">
+            <div th:replace="~{fragments/layout :: alerts}"></div>
+
+            <div class="row g-4 mb-4">
+                <div class="col-lg-4">
+                    <div class="saas-card text-center p-4">
+                        <div class="user-avatar mx-auto mb-3" style="width: 72px; height: 72px; font-size: 2rem;">
+                            <span th:text="${#strings.substring(student.user.fullName, 0, 1)}">S</span>
+                        </div>
+                        <h5 class="fw-bold text-dark mb-1" th:text="${student.user.fullName}">Student Name</h5>
+                        <p class="text-muted small mb-2" th:text="${student.user.email}">email</p>
+                        <span class="badge bg-primary-subtle text-primary rounded-pill px-3 py-1 font-monospace" th:text="${student.rollNumber}">2024-CS-001</span>
+
+                        <hr class="my-4">
+
+                        <div class="text-start small">
+                            <div class="d-flex justify-content-between py-1 border-bottom">
+                                <span class="text-muted">Department:</span>
+                                <strong class="text-dark" th:text="${student.department != null ? student.department.name : 'N/A'}">CSE</strong>
+                            </div>
+                            <div class="d-flex justify-content-between py-1 border-bottom">
+                                <span class="text-muted">Degree Course:</span>
+                                <span class="text-dark" th:text="${student.course != null ? student.course.name : 'N/A'}">B.Tech</span>
+                            </div>
+                            <div class="d-flex justify-content-between py-1 border-bottom">
+                                <span class="text-muted">Current Semester:</span>
+                                <span class="badge bg-secondary-subtle text-secondary" th:text="'Semester ' + ${student.currentSemester}">Sem 3</span>
+                            </div>
+                            <div class="d-flex justify-content-between py-1 border-bottom">
+                                <span class="text-muted">Academic Year:</span>
+                                <span class="text-dark" th:text="${student.academicYear}">2026-2027</span>
+                            </div>
+                            <div class="d-flex justify-content-between py-1">
+                                <span class="text-muted">Admission Date:</span>
+                                <span class="text-dark" th:text="${student.admissionDate}">2026-08-01</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-8">
+                    <!-- Academic Performance Summary KPI -->
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-3">
+                            <div class="stat-card">
+                                <div class="stat-icon emerald"><i class="bi bi-award-fill"></i></div>
+                                <div>
+                                    <div class="stat-val" th:text="${performance.overallPercentage} + '%'">0%</div>
+                                    <div class="stat-label">Overall Percentage</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="stat-card">
+                                <div class="stat-icon purple"><i class="bi bi-star-fill"></i></div>
+                                <div>
+                                    <div class="stat-val" th:text="${performance.grade}">A</div>
+                                    <div class="stat-label">Cumulative Grade</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="stat-card">
+                                <div class="stat-icon blue"><i class="bi bi-check2-all"></i></div>
+                                <div>
+                                    <div class="stat-val" th:text="${performance.totalObtained} + ' / ' + ${performance.totalMax}">0 / 0</div>
+                                    <div class="stat-label">Total Marks</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="stat-card">
+                                <div class="stat-icon amber"><i class="bi bi-book"></i></div>
+                                <div>
+                                    <div class="stat-val" th:text="${enrollments.size()}">0</div>
+                                    <div class="stat-label">Enrolled Subjects</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Enrolled Subjects Table -->
+                    <div class="saas-card mb-4">
+                        <div class="card-header-clean">
+                            <h6 class="card-title-clean">Enrolled Subjects</h6>
+                        </div>
+                        <div class="card-body-clean p-0">
+                            <table class="table-clean">
+                                <thead>
+                                    <tr>
+                                        <th>Code</th>
+                                        <th>Subject Name</th>
+                                        <th>Credits</th>
+                                        <th>Teacher</th>
+                                        <th>Enrollment Date</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="e : ${enrollments}">
+                                        <td><span class="badge bg-light text-dark border font-monospace" th:text="${e.subject.code}">CS301</span></td>
+                                        <td class="fw-bold text-dark" th:text="${e.subject.name}">Data Structures</td>
+                                        <td th:text="${e.subject.credits}">4</td>
+                                        <td th:text="${e.subject.teacher != null ? e.subject.teacher.fullName : 'Unassigned'}">Dr. Sharma</td>
+                                        <td class="text-muted small" th:text="${e.enrollmentDate}">2026-08-15</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Evaluated Marks Table -->
+                    <div class="saas-card">
+                        <div class="card-header-clean">
+                            <h6 class="card-title-clean">Detailed Assessment Marks</h6>
+                        </div>
+                        <div class="card-body-clean p-0">
+                            <div th:if="${#lists.isEmpty(performance.allMarks)}" class="text-center py-4 text-muted small">
+                                No assessment marks recorded yet for this student.
+                            </div>
+                            <table class="table-clean" th:unless="${#lists.isEmpty(performance.allMarks)}">
+                                <thead>
+                                    <tr>
+                                        <th>Subject</th>
+                                        <th>Assessment</th>
+                                        <th>Type</th>
+                                        <th>Marks</th>
+                                        <th>Percentage</th>
+                                        <th>Teacher Remarks</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="m : ${performance.allMarks}">
+                                        <td class="fw-semibold text-dark" th:text="${m.assessment.subject.code}">CS301</td>
+                                        <td th:text="${m.assessment.title}">Assignment 1</td>
+                                        <td><span class="badge bg-secondary-subtle text-secondary" th:text="${m.assessment.assessmentType.displayName}">Type</span></td>
+                                        <td class="fw-bold text-dark" th:text="${m.marksObtained + ' / ' + m.assessment.maxMarks}">18 / 20</td>
+                                        <td>
+                                            <span class="badge" th:classappend="${m.percentage >= 75 ? 'bg-success-subtle text-success' : 'bg-warning-subtle text-warning'}"
+                                                  th:text="${#numbers.formatDecimal(m.percentage, 1, 1)} + '%'">90%</span>
+                                        </td>
+                                        <td class="text-muted small" th:text="${m.teacherRemarks != null ? m.teacherRemarks : '-'}">Remarks</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+</html>

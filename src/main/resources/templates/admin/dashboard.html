@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Admin Dashboard')}"></head>
+<body>
+<div class="app-wrapper">
+    <div th:replace="~{fragments/layout :: sidebar('dashboard')}"></div>
+
+    <div class="app-main">
+        <div th:replace="~{fragments/layout :: navbar('Institutional Overview', null)}"></div>
+
+        <div class="app-content">
+            <div th:replace="~{fragments/layout :: alerts}"></div>
+
+            <!-- Metric Cards Row -->
+            <div class="row g-3 mb-4">
+                <div class="col-xl-2 col-md-4 col-sm-6">
+                    <div class="stat-card">
+                        <div class="stat-icon blue"><i class="bi bi-people-fill"></i></div>
+                        <div>
+                            <div class="stat-val" th:text="${totalStudents}">0</div>
+                            <div class="stat-label">Total Students</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-2 col-md-4 col-sm-6">
+                    <div class="stat-card">
+                        <div class="stat-icon emerald"><i class="bi bi-person-badge-fill"></i></div>
+                        <div>
+                            <div class="stat-val" th:text="${totalTeachers}">0</div>
+                            <div class="stat-label">Faculty Members</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-2 col-md-4 col-sm-6">
+                    <div class="stat-card">
+                        <div class="stat-icon purple"><i class="bi bi-journal-bookmark-fill"></i></div>
+                        <div>
+                            <div class="stat-val" th:text="${totalCourses}">0</div>
+                            <div class="stat-label">Active Courses</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-2 col-md-4 col-sm-6">
+                    <div class="stat-card">
+                        <div class="stat-icon amber"><i class="bi bi-book-half"></i></div>
+                        <div>
+                            <div class="stat-val" th:text="${totalSubjects}">0</div>
+                            <div class="stat-label">Subjects Taught</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-2 col-md-4 col-sm-6">
+                    <div class="stat-card">
+                        <div class="stat-icon blue"><i class="bi bi-file-earmark-text"></i></div>
+                        <div>
+                            <div class="stat-val" th:text="${activeAssignments}">0</div>
+                            <div class="stat-label">Active Assignments</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-2 col-md-4 col-sm-6">
+                    <div class="stat-card">
+                        <div class="stat-icon rose"><i class="bi bi-send-check-fill"></i></div>
+                        <div>
+                            <div class="stat-val" th:text="${totalSubmissions}">0</div>
+                            <div class="stat-label">Total Submissions</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts Row -->
+            <div class="row g-4 mb-4">
+                <div class="col-lg-8">
+                    <div class="saas-card h-100">
+                        <div class="card-header-clean">
+                            <div>
+                                <h6 class="card-title-clean">Enrollment & Subject Load</h6>
+                                <p class="card-subtitle-clean">Active student registrations across academic subjects</p>
+                            </div>
+                            <span class="badge bg-light text-dark border">Term 2026-2027</span>
+                        </div>
+                        <div class="card-body-clean">
+                            <canvas id="enrollmentChart" height="120"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="saas-card h-100">
+                        <div class="card-header-clean">
+                            <div>
+                                <h6 class="card-title-clean">Department Distribution</h6>
+                                <p class="card-subtitle-clean">Faculty and student proportion</p>
+                            </div>
+                        </div>
+                        <div class="card-body-clean d-flex align-items-center justify-content-center">
+                            <canvas id="deptPieChart" height="200"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tables Row -->
+            <div class="row g-4">
+                <!-- Recent Students -->
+                <div class="col-lg-6">
+                    <div class="saas-card">
+                        <div class="card-header-clean">
+                            <div>
+                                <h6 class="card-title-clean">Recent Student Registrations</h6>
+                                <p class="card-subtitle-clean">Newly enrolled undergraduates</p>
+                            </div>
+                            <a th:href="@{/admin/students}" class="btn btn-sm btn-saas-outline">View All</a>
+                        </div>
+                        <div class="card-body-clean p-0">
+                            <table class="table-clean">
+                                <thead>
+                                    <tr>
+                                        <th>Student</th>
+                                        <th>Roll Number</th>
+                                        <th>Department</th>
+                                        <th>Sem</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="s : ${recentStudents}">
+                                        <td>
+                                            <a th:href="@{/admin/students/{id}(id=${s.id})}" class="fw-semibold text-dark text-decoration-none">
+                                                <span th:text="${s.user.fullName}">Name</span>
+                                            </a>
+                                        </td>
+                                        <td class="text-muted" th:text="${s.rollNumber}">Roll</td>
+                                        <td th:text="${s.department != null ? s.department.code : 'N/A'}">CSE</td>
+                                        <td th:text="${s.currentSemester}">3</td>
+                                        <td>
+                                            <span class="badge" th:classappend="${s.user.active} ? 'bg-success-subtle text-success' : 'bg-danger-subtle text-danger'"
+                                                  th:text="${s.user.active} ? 'Active' : 'Inactive'">Active</span>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Faculty Members -->
+                <div class="col-lg-6">
+                    <div class="saas-card">
+                        <div class="card-header-clean">
+                            <div>
+                                <h6 class="card-title-clean">Faculty Members</h6>
+                                <p class="card-subtitle-clean">Professors & teaching staff</p>
+                            </div>
+                            <a th:href="@{/admin/teachers}" class="btn btn-sm btn-saas-outline">View All</a>
+                        </div>
+                        <div class="card-body-clean p-0">
+                            <table class="table-clean">
+                                <thead>
+                                    <tr>
+                                        <th>Teacher</th>
+                                        <th>Designation</th>
+                                        <th>Department</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="t : ${recentTeachers}">
+                                        <td>
+                                            <div class="fw-semibold text-dark" th:text="${t.user.fullName}">Dr. Name</div>
+                                            <span class="text-muted small" th:text="${t.user.email}">email</span>
+                                        </td>
+                                        <td th:text="${t.designation}">Professor</td>
+                                        <td th:text="${t.department != null ? t.department.code : 'N/A'}">CSE</td>
+                                        <td>
+                                            <a th:href="@{/admin/teachers/{id}(id=${t.id})}" class="btn btn-sm btn-light border py-1 px-2">
+                                                <i class="bi bi-eye"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div th:replace="~{fragments/layout :: scripts}"></div>
+
+<script th:inline="javascript">
+    document.addEventListener("DOMContentLoaded", function() {
+        // Enrollment Chart
+        const ctxBar = document.getElementById('enrollmentChart');
+        if (ctxBar) {
+            new Chart(ctxBar, {
+                type: 'bar',
+                data: {
+                    labels: ['Data Structures & Algo', 'Database Systems', 'Web Tech & Cloud', 'Computer Networks'],
+                    datasets: [{
+                        label: 'Enrolled Students',
+                        data: [28, 26, 24, 19],
+                        backgroundColor: '#3B82F6',
+                        borderRadius: 6
+                    }, {
+                        label: 'Completed Submissions',
+                        data: [25, 22, 20, 15],
+                        backgroundColor: '#10B981',
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { position: 'top', labels: { boxWidth: 12 } }
+                    },
+                    scales: {
+                        y: { beginAtZero: true, grid: { color: '#F1F5F9' } },
+                        x: { grid: { display: false } }
+                    }
+                }
+            });
+        }
+
+        // Dept Pie Chart
+        const ctxPie = document.getElementById('deptPieChart');
+        if (ctxPie) {
+            new Chart(ctxPie, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Computer Science', 'Information Tech', 'Electronics'],
+                    datasets: [{
+                        data: [55, 30, 15],
+                        backgroundColor: ['#2563EB', '#0EA5E9', '#8B5CF6'],
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom', labels: { boxWidth: 10 } }
+                    },
+                    cutout: '68%'
+                }
+            });
+        }
+    });
+</script>
+</body>
+</html>

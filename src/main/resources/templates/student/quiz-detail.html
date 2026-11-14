@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head(${quiz.title})}"></head>
+<body>
+<div class="app-wrapper">
+    <div th:replace="~{fragments/layout :: sidebar('quizzes')}"></div>
+
+    <div class="app-main">
+        <div th:replace="~{fragments/layout :: navbar('Quiz Instructions', null)}"></div>
+
+        <div class="app-content">
+            <div th:replace="~{fragments/layout :: alerts}"></div>
+
+            <div class="saas-card p-4 mx-auto" style="max-width: 800px;">
+                <div class="text-center mb-4 pb-3 border-bottom">
+                    <span class="badge bg-primary-subtle text-primary font-monospace mb-2" th:text="${quiz.subject.code}">CS301</span>
+                    <h3 class="fw-bold text-dark mb-1" th:text="${quiz.title}">DSA Mid-Term Online Assessment</h3>
+                    <p class="text-muted small" th:text="${quiz.description}">Description</p>
+                </div>
+
+                <div class="row g-3 text-center mb-4">
+                    <div class="col-sm-3 col-6">
+                        <div class="p-3 bg-light rounded-2 border">
+                            <span class="text-muted small d-block">Duration</span>
+                            <h5 class="fw-bold text-dark m-0" th:text="${quiz.durationMinutes} + ' Mins'">20 Mins</h5>
+                        </div>
+                    </div>
+                    <div class="col-sm-3 col-6">
+                        <div class="p-3 bg-light rounded-2 border">
+                            <span class="text-muted small d-block">Questions</span>
+                            <h5 class="fw-bold text-dark m-0" th:text="${quiz.questions.size()}">4</h5>
+                        </div>
+                    </div>
+                    <div class="col-sm-3 col-6">
+                        <div class="p-3 bg-light rounded-2 border">
+                            <span class="text-muted small d-block">Total Marks</span>
+                            <h5 class="fw-bold text-dark m-0" th:text="${quiz.totalMarks}">20</h5>
+                        </div>
+                    </div>
+                    <div class="col-sm-3 col-6">
+                        <div class="p-3 bg-light rounded-2 border">
+                            <span class="text-muted small d-block">Passing Marks</span>
+                            <h5 class="fw-bold text-success m-0" th:text="${quiz.passingMarks}">8</h5>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <h6 class="fw-bold text-dark mb-2"><i class="bi bi-shield-exclamation text-warning me-1"></i> Exam Rules & Instructions</h6>
+                    <div class="p-3 border rounded-2 small text-dark bg-light" style="white-space: pre-wrap;"
+                         th:text="${quiz.instructions != null and !#strings.isEmpty(quiz.instructions) ? quiz.instructions : '1. Ensure stable internet connection.\n2. Once started, the timer cannot be paused.\n3. Automatic submission will occur when time runs out.'}">
+                        Instructions
+                    </div>
+                </div>
+
+                <div th:if="${attempt != null and attempt.completed}">
+                    <div class="alert alert-success d-flex align-items-center justify-content-between p-3 rounded-3">
+                        <div>
+                            <i class="bi bi-check-circle-fill me-2 fs-5"></i> You have completed this quiz!
+                        </div>
+                        <a th:href="@{/student/quizzes/{id}/result(id=${quiz.id})}" class="btn btn-sm btn-success">View Result</a>
+                    </div>
+                </div>
+
+                <div th:unless="${attempt != null and attempt.completed}">
+                    <div th:if="${quiz.expired}" class="alert alert-danger p-3 rounded-3 small">
+                        <i class="bi bi-lock-fill me-2"></i> This quiz has expired and can no longer be attempted.
+                    </div>
+
+                    <div th:unless="${quiz.expired}">
+                        <form th:action="@{/student/quizzes/{id}/start(id=${quiz.id})}" method="post">
+                            <button type="submit" class="btn btn-saas-primary w-100 py-2 fs-6 fw-semibold">
+                                <i class="bi bi-play-circle-fill me-1"></i> Start Quiz Attempt
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+</html>

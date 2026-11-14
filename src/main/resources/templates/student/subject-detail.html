@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head(${subject.name})}"></head>
+<body>
+<div class="app-wrapper">
+    <div th:replace="~{fragments/layout :: sidebar('subjects')}"></div>
+
+    <div class="app-main">
+        <div th:replace="~{fragments/layout :: navbar(${subject.name}, null)}"></div>
+
+        <div class="app-content">
+            <div th:replace="~{fragments/layout :: alerts}"></div>
+
+            <!-- Subject Header Card -->
+            <div class="saas-card p-4 mb-4">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <div class="d-flex align-items-center gap-2 mb-2">
+                            <span class="badge bg-primary-subtle text-primary font-monospace fs-6 px-3 py-1" th:text="${subject.code}">CS301</span>
+                            <span class="badge bg-secondary-subtle text-secondary" th:text="'Semester ' + ${subject.semester}">Sem 3</span>
+                            <span class="badge bg-light text-dark border" th:text="${subject.credits} + ' Credits'">4 Credits</span>
+                        </div>
+                        <h4 class="fw-bold text-dark mb-1" th:text="${subject.name}">Data Structures & Algorithms</h4>
+                        <p class="text-muted small mb-2" th:text="${subject.description}">Description</p>
+                        <div class="small text-muted">
+                            <i class="bi bi-person-badge text-primary me-1"></i> Faculty Instructor:
+                            <strong class="text-dark" th:text="${subject.teacher != null ? subject.teacher.fullName : 'Unassigned'}">Dr. Rajesh Sharma</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tabs -->
+            <ul class="nav nav-pills mb-4 gap-2" id="studentSubjectTab" role="tablist">
+                <li class="nav-item">
+                    <button class="nav-link active px-4 py-2 fw-semibold" id="mat-tab" data-bs-toggle="pill" data-bs-target="#tab-materials" type="button">
+                        <i class="bi bi-folder-fill me-1"></i> Study Materials (<span th:text="${materials.size()}">0</span>)
+                    </button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link px-4 py-2 fw-semibold" id="ass-tab" data-bs-toggle="pill" data-bs-target="#tab-assignments" type="button">
+                        <i class="bi bi-file-earmark-text-fill me-1"></i> Assignments (<span th:text="${assignments.size()}">0</span>)
+                    </button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link px-4 py-2 fw-semibold" id="quiz-tab" data-bs-toggle="pill" data-bs-target="#tab-quizzes" type="button">
+                        <i class="bi bi-patch-question-fill me-1"></i> Quizzes (<span th:text="${quizzes.size()}">0</span>)
+                    </button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link px-4 py-2 fw-semibold" id="prac-tab" data-bs-toggle="pill" data-bs-target="#tab-practicals" type="button">
+                        <i class="bi bi-cpu-fill me-1"></i> Practicals (<span th:text="${practicals.size()}">0</span>)
+                    </button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link px-4 py-2 fw-semibold" id="marks-tab" data-bs-toggle="pill" data-bs-target="#tab-marks" type="button">
+                        <i class="bi bi-award-fill me-1"></i> My Grades
+                    </button>
+                </li>
+            </ul>
+
+            <div class="tab-content" id="studentSubjectTabContent">
+                <!-- MATERIALS TAB -->
+                <div class="tab-pane fade show active" id="tab-materials" role="tabpanel">
+                    <div class="saas-card">
+                        <div class="card-header-clean">
+                            <h6 class="card-title-clean">Lecture Notes & Handouts</h6>
+                        </div>
+                        <div class="card-body-clean p-0">
+                            <div th:if="${#lists.isEmpty(materials)}" class="text-center py-5 text-muted small">
+                                No study materials shared yet for this subject.
+                            </div>
+                            <div class="list-group list-group-flush" th:unless="${#lists.isEmpty(materials)}">
+                                <div th:each="m : ${materials}" class="list-group-item p-3 d-flex justify-content-between align-items-center">
+                                    <div class="d-flex align-items-center gap-3">
+                                        <div class="stat-icon blue" style="width: 42px; height: 42px; font-size: 1.2rem;">
+                                            <i class="bi bi-file-earmark-pdf-fill"></i>
+                                        </div>
+                                        <div>
+                                            <h6 class="mb-1 fw-bold text-dark" th:text="${m.title}">Notes Title</h6>
+                                            <p class="mb-1 text-muted small" th:text="${m.description}">Description</p>
+                                            <div class="d-flex gap-2 small text-muted">
+                                                <span class="badge bg-secondary-subtle text-secondary" th:text="${m.materialType}">NOTES</span>
+                                                <span th:text="${m.fileSize}">2.4 MB</span> &bull;
+                                                <span th:text="${#temporals.format(m.uploadDate, 'dd MMM yyyy')}">Date</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <a th:href="@{${m.fileUrl}}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                        <i class="bi bi-download me-1"></i> Download File
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ASSIGNMENTS TAB -->
+                <div class="tab-pane fade" id="tab-assignments" role="tabpanel">
+                    <div class="saas-card">
+                        <div class="card-header-clean">
+                            <h6 class="card-title-clean">Subject Assignments</h6>
+                        </div>
+                        <div class="card-body-clean p-0">
+                            <table class="table-clean">
+                                <thead>
+                                    <tr>
+                                        <th>Title</th>
+                                        <th>Due Date</th>
+                                        <th>Max Marks</th>
+                                        <th>Submission Type</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="a : ${assignments}">
+                                        <td>
+                                            <div class="fw-bold text-dark" th:text="${a.title}">AVL Tree</div>
+                                            <small class="text-muted text-truncate d-block" style="max-width: 300px;" th:text="${a.description}"></small>
+                                        </td>
+                                        <td class="small" th:text="${#temporals.format(a.dueDate, 'dd MMM yyyy, HH:mm')}">Date</td>
+                                        <td class="fw-bold text-dark" th:text="${a.maxMarks}">20</td>
+                                        <td><span class="badge bg-light text-dark border" th:text="${a.submissionType}">BOTH</span></td>
+                                        <td>
+                                            <a th:href="@{/student/assignments/{id}(id=${a.id})}" class="btn btn-sm btn-saas-primary py-1 px-3">
+                                                Open Assignment
+                                            </a>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- QUIZZES TAB -->
+                <div class="tab-pane fade" id="tab-quizzes" role="tabpanel">
+                    <div class="saas-card">
+                        <div class="card-header-clean">
+                            <h6 class="card-title-clean">Subject Online Quizzes</h6>
+                        </div>
+                        <div class="card-body-clean p-0">
+                            <table class="table-clean">
+                                <thead>
+                                    <tr>
+                                        <th>Quiz Title</th>
+                                        <th>Duration</th>
+                                        <th>Total Marks</th>
+                                        <th>Passing Marks</th>
+                                        <th>Schedule</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="q : ${quizzes}">
+                                        <td class="fw-bold text-dark" th:text="${q.title}">Mid-Term Test</td>
+                                        <td th:text="${q.durationMinutes} + ' mins'">20 mins</td>
+                                        <td class="fw-bold text-dark" th:text="${q.totalMarks}">20</td>
+                                        <td th:text="${q.passingMarks}">8</td>
+                                        <td class="small text-muted" th:text="${#temporals.format(q.endDateTime, 'dd MMM, HH:mm')}">Date</td>
+                                        <td>
+                                            <a th:href="@{/student/quizzes/{id}(id=${q.id})}" class="btn btn-sm btn-saas-primary py-1 px-3">
+                                                Quiz Details
+                                            </a>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PRACTICALS TAB -->
+                <div class="tab-pane fade" id="tab-practicals" role="tabpanel">
+                    <div class="saas-card">
+                        <div class="card-header-clean">
+                            <h6 class="card-title-clean">Laboratory Experiments</h6>
+                        </div>
+                        <div class="card-body-clean p-0">
+                            <table class="table-clean">
+                                <thead>
+                                    <tr>
+                                        <th>Exp #</th>
+                                        <th>Title</th>
+                                        <th>Due Date</th>
+                                        <th>Max Marks</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="p : ${practicals}">
+                                        <td><span class="badge bg-primary-subtle text-primary font-monospace fw-bold" th:text="${p.experimentNumber}">EXP-01</span></td>
+                                        <td class="fw-bold text-dark" th:text="${p.title}">BFS & DFS Traversal</td>
+                                        <td class="small text-muted" th:text="${#temporals.format(p.dueDate, 'dd MMM yyyy')}">Date</td>
+                                        <td class="fw-bold text-dark" th:text="${p.maxMarks}">30</td>
+                                        <td>
+                                            <a th:href="@{/student/practicals/{id}(id=${p.id})}" class="btn btn-sm btn-saas-primary py-1 px-3">
+                                                Lab Work
+                                            </a>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- MARKS TAB -->
+                <div class="tab-pane fade" id="tab-marks" role="tabpanel">
+                    <div class="saas-card">
+                        <div class="card-header-clean">
+                            <h6 class="card-title-clean">My Evaluated Scores in this Subject</h6>
+                        </div>
+                        <div class="card-body-clean p-0">
+                            <div th:if="${#lists.isEmpty(marks)}" class="text-center py-5 text-muted small">
+                                No evaluations published yet for this subject.
+                            </div>
+                            <table class="table-clean" th:unless="${#lists.isEmpty(marks)}">
+                                <thead>
+                                    <tr>
+                                        <th>Assessment</th>
+                                        <th>Category</th>
+                                        <th>Marks Scored</th>
+                                        <th>Max Marks</th>
+                                        <th>Percentage</th>
+                                        <th>Instructor Remarks</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="m : ${marks}">
+                                        <td class="fw-bold text-dark" th:text="${m.assessment.title}">Assignment 1</td>
+                                        <td><span class="badge bg-secondary-subtle text-secondary" th:text="${m.assessment.assessmentType.displayName}">Assignment</span></td>
+                                        <td class="fw-bold fs-6 text-primary" th:text="${m.marksObtained}">18.5</td>
+                                        <td class="text-muted" th:text="${m.assessment.maxMarks}">20</td>
+                                        <td>
+                                            <span class="badge" th:classappend="${m.percentage >= 75 ? 'bg-success-subtle text-success' : 'bg-warning-subtle text-warning'}"
+                                                  th:text="${#numbers.formatDecimal(m.percentage, 1, 1)} + '%'">92.5%</span>
+                                        </td>
+                                        <td class="text-muted small" th:text="${m.teacherRemarks}">Remarks</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+</html>

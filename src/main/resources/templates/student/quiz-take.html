@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${'Taking Quiz: ' + quiz.title}">Quiz Take</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+</head>
+<body class="bg-light">
+
+<!-- Top Exam Bar -->
+<div class="bg-white border-bottom py-3 px-4 sticky-top shadow-sm">
+    <div class="container-fluid d-flex justify-content-between align-items-center">
+        <div class="d-flex align-items-center gap-3">
+            <span class="badge bg-primary-subtle text-primary font-monospace fs-6 px-3 py-1" th:text="${quiz.subject.code}">CS301</span>
+            <div>
+                <h5 class="fw-bold text-dark m-0" th:text="${quiz.title}">DSA Mid-Term Online Assessment</h5>
+                <span class="text-muted small" th:text="${student.user.fullName + ' (' + student.rollNumber + ')'}">Student</span>
+            </div>
+        </div>
+
+        <div class="d-flex align-items-center gap-3">
+            <div class="quiz-timer-box">
+                <i class="bi bi-stopwatch text-warning"></i>
+                <span id="timerDisplay">00:00</span>
+            </div>
+            <button type="button" class="btn btn-saas-primary fw-semibold" onclick="confirmSubmit()">
+                <i class="bi bi-send-check-fill me-1"></i> Submit Quiz
+            </button>
+        </div>
+    </div>
+</div>
+
+<div class="container py-4">
+    <form id="quizForm" th:action="@{/student/quizzes/{id}/submit(id=${quiz.id})}" method="post">
+        <div class="row g-4">
+            <!-- Questions Column -->
+            <div class="col-lg-8">
+                <div class="d-flex flex-column gap-4">
+                    <div th:each="q, iter : ${questions}" th:id="'qcard_' + ${q.id}" class="saas-card p-4">
+                        <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="badge bg-dark rounded-pill fs-6 px-3 py-1" th:text="'Question ' + ${iter.count}">Question 1</span>
+                                <span class="badge bg-secondary-subtle text-secondary" th:text="${q.questionType.displayName}">MCQ</span>
+                            </div>
+                            <span class="badge bg-light text-dark border font-monospace" th:text="${q.marks} + ' Marks'">5 Marks</span>
+                        </div>
+
+                        <h5 class="fw-bold text-dark mb-4" th:text="${q.questionText}">Question text</h5>
+
+                        <!-- MCQ (Single Choice) -->
+                        <div th:if="${q.questionType.name() == 'MCQ'}" class="d-flex flex-column gap-2">
+                            <div th:each="opt : ${q.options}" class="p-3 border rounded-3 bg-white">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" th:name="'question_' + ${q.id}"
+                                           th:id="'opt_' + ${opt.id}" th:value="${opt.id}"
+                                           th:onchange="'markAnswered(' + ${iter.count} + ')'">
+                                    <label class="form-check-label fw-semibold text-dark w-100 ps-2" th:for="'opt_' + ${opt.id}" th:text="${opt.optionText}">Option</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- MULTIPLE SELECT (Checkboxes) -->
+                        <div th:if="${q.questionType.name() == 'MULTIPLE_SELECT'}" class="d-flex flex-column gap-2">
+                            <div th:each="opt : ${q.options}" class="p-3 border rounded-3 bg-white">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" th:name="'question_' + ${q.id}"
+                                           th:id="'opt_' + ${opt.id}" th:value="${opt.id}"
+                                           th:onchange="'markAnswered(' + ${iter.count} + ')'">
+                                    <label class="form-check-label fw-semibold text-dark w-100 ps-2" th:for="'opt_' + ${opt.id}" th:text="${opt.optionText}">Option</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- TRUE / FALSE -->
+                        <div th:if="${q.questionType.name() == 'TRUE_FALSE'}" class="d-flex gap-3">
+                            <div th:each="opt : ${q.options}" class="flex-fill p-3 border rounded-3 bg-white">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" th:name="'question_' + ${q.id}"
+                                           th:id="'opt_' + ${opt.id}" th:value="${opt.id}"
+                                           th:onchange="'markAnswered(' + ${iter.count} + ')'">
+                                    <label class="form-check-label fw-bold text-dark w-100 ps-2" th:for="'opt_' + ${opt.id}" th:text="${opt.optionText}">True</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- SHORT ANSWER (Subjective) -->
+                        <div th:if="${q.questionType.name() == 'SHORT_ANSWER'}">
+                            <label class="form-label small fw-semibold text-muted mb-2">Write your answer below:</label>
+                            <textarea class="form-control font-monospace p-3" rows="4" th:name="'question_' + ${q.id}"
+                                      placeholder="Type your explanation or answer here..."
+                                      th:oninput="'markAnswered(' + ${iter.count} + ')'"></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Question Jump Panel Sidebar -->
+            <div class="col-lg-4">
+                <div class="saas-card p-4 sticky-top" style="top: 90px;">
+                    <h6 class="fw-bold text-dark mb-3">Questions Navigation</h6>
+                    <div class="d-flex flex-wrap gap-2 mb-4">
+                        <button type="button" th:each="q, iter : ${questions}" th:id="'navbtn_' + ${iter.count}"
+                                class="question-nav-btn"
+                                th:onclick="'scrollToQuestion(\'qcard_' + ${q.id} + '\')'"
+                                th:text="${iter.count}">1</button>
+                    </div>
+
+                    <div class="small text-muted border-top pt-3">
+                        <div class="d-flex align-items-center gap-2 mb-2">
+                            <span class="question-nav-btn answered" style="width: 20px; height: 20px;"></span>
+                            <span>Answered Question</span>
+                        </div>
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="question-nav-btn" style="width: 20px; height: 20px;"></span>
+                            <span>Unanswered Question</span>
+                        </div>
+                    </div>
+
+                    <hr class="my-4">
+
+                    <button type="button" class="btn btn-saas-primary w-100 py-2 fw-semibold" onclick="confirmSubmit()">
+                        Finish & Submit Exam
+                    </button>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<script th:inline="javascript">
+    const durationMinutes = /*[[${quiz.durationMinutes}]]*/ 30;
+    // Calculate seconds from attempt start or default to full duration
+    let totalSeconds = durationMinutes * 60;
+
+    function updateTimer() {
+        const mins = Math.floor(totalSeconds / 60);
+        const secs = totalSeconds % 60;
+        document.getElementById('timerDisplay').innerText = 
+            (mins < 10 ? '0' : '') + mins + ':' + (secs < 10 ? '0' : '') + secs;
+
+        if (totalSeconds <= 0) {
+            alert('Time has expired! Your answers are being submitted automatically.');
+            document.getElementById('quizForm').submit();
+        } else {
+            totalSeconds--;
+            setTimeout(updateTimer, 1000);
+        }
+    }
+
+    updateTimer();
+
+    function scrollToQuestion(cardId) {
+        const el = document.getElementById(cardId);
+        if (el) {
+            el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+    }
+
+    function markAnswered(index) {
+        const btn = document.getElementById('navbtn_' + index);
+        if (btn) {
+            btn.classList.add('answered');
+        }
+    }
+
+    function confirmSubmit() {
+        if (confirm('Are you sure you want to finalize and submit your quiz attempt? You cannot edit answers after submission.')) {
+            document.getElementById('quizForm').submit();
+        }
+    }
+</script>
+</body>
+</html>

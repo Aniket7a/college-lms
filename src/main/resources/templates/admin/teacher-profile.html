@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Faculty Profile - ' + ${teacher.user.fullName})}"></head>
+<body>
+<div class="app-wrapper">
+    <div th:replace="~{fragments/layout :: sidebar('teachers')}"></div>
+
+    <div class="app-main">
+        <div th:replace="~{fragments/layout :: navbar('Faculty Profile', null)}"></div>
+
+        <div class="app-content">
+            <div th:replace="~{fragments/layout :: alerts}"></div>
+
+            <div class="row g-4">
+                <div class="col-lg-4">
+                    <div class="saas-card text-center p-4">
+                        <div class="user-avatar mx-auto mb-3" style="width: 72px; height: 72px; font-size: 2rem; background: #2563EB;">
+                            <span th:text="${#strings.substring(teacher.user.fullName, 0, 1)}">T</span>
+                        </div>
+                        <h5 class="fw-bold text-dark mb-1" th:text="${teacher.user.fullName}">Dr. Teacher</h5>
+                        <p class="text-muted small mb-2" th:text="${teacher.user.email}">email</p>
+                        <span class="badge bg-primary-subtle text-primary rounded-pill px-3 py-1 font-monospace" th:text="${teacher.employeeId}">EMP-101</span>
+
+                        <hr class="my-4">
+
+                        <div class="text-start small">
+                            <div class="d-flex justify-content-between py-1 border-bottom">
+                                <span class="text-muted">Department:</span>
+                                <strong class="text-dark" th:text="${teacher.department != null ? teacher.department.name : 'N/A'}">CSE</strong>
+                            </div>
+                            <div class="d-flex justify-content-between py-1 border-bottom">
+                                <span class="text-muted">Designation:</span>
+                                <span class="text-dark" th:text="${teacher.designation}">Professor</span>
+                            </div>
+                            <div class="d-flex justify-content-between py-1 border-bottom">
+                                <span class="text-muted">Qualification:</span>
+                                <span class="text-dark" th:text="${teacher.qualification}">Ph.D.</span>
+                            </div>
+                            <div class="d-flex justify-content-between py-1 border-bottom">
+                                <span class="text-muted">Specialization:</span>
+                                <span class="text-dark" th:text="${teacher.specialization}">Algorithms</span>
+                            </div>
+                            <div class="d-flex justify-content-between py-1">
+                                <span class="text-muted">Joining Date:</span>
+                                <span class="text-dark" th:text="${teacher.joiningDate}">2026-01-10</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-8">
+                    <div class="saas-card">
+                        <div class="card-header-clean">
+                            <h6 class="card-title-clean">Assigned Teaching Subjects</h6>
+                        </div>
+                        <div class="card-body-clean p-0">
+                            <div th:if="${#lists.isEmpty(assignedSubjects)}" class="text-center py-4 text-muted small">
+                                No subjects currently assigned to this instructor.
+                            </div>
+                            <table class="table-clean" th:unless="${#lists.isEmpty(assignedSubjects)}">
+                                <thead>
+                                    <tr>
+                                        <th>Code</th>
+                                        <th>Subject Name</th>
+                                        <th>Course</th>
+                                        <th>Semester</th>
+                                        <th>Credits</th>
+                                        <th>Enrolled</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="s : ${assignedSubjects}">
+                                        <td><span class="badge bg-light text-dark border font-monospace" th:text="${s.code}">CS301</span></td>
+                                        <td class="fw-bold text-dark" th:text="${s.name}">Data Structures</td>
+                                        <td th:text="${s.course != null ? s.course.code : 'N/A'}">BTECH-CSE</td>
+                                        <td th:text="'Sem ' + ${s.semester}">Sem 3</td>
+                                        <td th:text="${s.credits}">4</td>
+                                        <td>
+                                            <span class="badge bg-primary-subtle text-primary" th:text="${s.enrollments.size()} + ' students'">28 students</span>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+</html>

@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Teacher Dashboard')}"></head>
+<body>
+<div class="app-wrapper">
+    <div th:replace="~{fragments/layout :: sidebar('dashboard')}"></div>
+
+    <div class="app-main">
+        <div th:replace="~{fragments/layout :: navbar('Faculty Dashboard', null)}"></div>
+
+        <div class="app-content">
+            <div th:replace="~{fragments/layout :: alerts}"></div>
+
+            <!-- Welcome Banner -->
+            <div class="saas-card bg-primary text-white p-4 mb-4" style="background: linear-gradient(135deg, #0F172A 0%, #1E3A8A 100%) !important;">
+                <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+                    <div>
+                        <span class="badge bg-primary-subtle text-primary border-0 mb-2">Academic Session 2026-2027</span>
+                        <h4 class="fw-bold mb-1" th:text="'Welcome back, ' + ${currentUser.fullName}">Welcome, Dr. Sharma</h4>
+                        <p class="text-light mb-0 small" style="opacity: 0.85;">Manage your assigned curriculum, grade student submissions, and oversee laboratory practicals.</p>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <a th:href="@{/teacher/assignments}" class="btn btn-light btn-sm fw-semibold shadow-sm">
+                            <i class="bi bi-plus-circle me-1"></i> New Assignment
+                        </a>
+                        <a th:href="@{/teacher/marks}" class="btn btn-outline-light btn-sm fw-semibold">
+                            <i class="bi bi-award me-1"></i> Marks Sheet
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Metric Cards -->
+            <div class="row g-3 mb-4">
+                <div class="col-xl-3 col-md-6">
+                    <div class="stat-card">
+                        <div class="stat-icon blue"><i class="bi bi-book-half"></i></div>
+                        <div>
+                            <div class="stat-val" th:text="${totalAssignedSubjects}">0</div>
+                            <div class="stat-label">Assigned Subjects</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-md-6">
+                    <div class="stat-card">
+                        <div class="stat-icon emerald"><i class="bi bi-people-fill"></i></div>
+                        <div>
+                            <div class="stat-val" th:text="${totalEnrolledStudents}">0</div>
+                            <div class="stat-label">Enrolled Students</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-md-6">
+                    <div class="stat-card">
+                        <div class="stat-icon amber"><i class="bi bi-hourglass-split"></i></div>
+                        <div>
+                            <div class="stat-val" th:text="${pendingEvaluations}">0</div>
+                            <div class="stat-label">Pending Evaluations</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-md-6">
+                    <div class="stat-card">
+                        <div class="stat-icon purple"><i class="bi bi-patch-question-fill"></i></div>
+                        <div>
+                            <div class="stat-val" th:text="${upcomingQuizzes}">0</div>
+                            <div class="stat-label">Active / Upcoming Quizzes</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row g-4">
+                <!-- Recent Student Submissions -->
+                <div class="col-lg-8">
+                    <div class="saas-card">
+                        <div class="card-header-clean">
+                            <div>
+                                <h6 class="card-title-clean">Recent Student Submissions</h6>
+                                <p class="card-subtitle-clean">Submissions awaiting review or recently graded</p>
+                            </div>
+                            <a th:href="@{/teacher/assignments}" class="btn btn-sm btn-saas-outline">View Assignments</a>
+                        </div>
+                        <div class="card-body-clean p-0">
+                            <div th:if="${#lists.isEmpty(recentSubmissions)}" class="text-center py-5 text-muted small">
+                                <i class="bi bi-folder2-open fs-2 d-block mb-2"></i>
+                                No student submissions received yet.
+                            </div>
+                            <div class="table-responsive" th:unless="${#lists.isEmpty(recentSubmissions)}">
+                                <table class="table-clean">
+                                    <thead>
+                                        <tr>
+                                            <th>Student</th>
+                                            <th>Assignment</th>
+                                            <th>Submitted At</th>
+                                            <th>Status</th>
+                                            <th>Marks</th>
+                                            <th>Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr th:each="sub : ${recentSubmissions}">
+                                            <td>
+                                                <div class="fw-bold text-dark" th:text="${sub.student.user.fullName}">Student Name</div>
+                                                <small class="text-muted" th:text="${sub.student.rollNumber}">Roll</small>
+                                            </td>
+                                            <td>
+                                                <div class="fw-semibold text-dark text-truncate" style="max-width: 200px;" th:text="${sub.assignment.title}">Title</div>
+                                                <small class="text-muted" th:text="${sub.assignment.subject.code}">CS301</small>
+                                            </td>
+                                            <td class="small text-muted" th:text="${#temporals.format(sub.submissionDate, 'dd MMM, HH:mm')}">Date</td>
+                                            <td>
+                                                <span class="badge-status"
+                                                      th:classappend="${sub.status == 'EVALUATED' ? 'badge-evaluated' : (sub.status == 'LATE' ? 'badge-late' : 'badge-submitted')}">
+                                                    <span th:text="${sub.status}">SUBMITTED</span>
+                                                </span>
+                                            </td>
+                                            <td class="fw-bold" th:text="${sub.marksObtained != null ? sub.marksObtained + ' / ' + sub.assignment.maxMarks : 'Pending'}">Pending</td>
+                                            <td>
+                                                <a th:href="@{/teacher/assignments/{id}/submissions(id=${sub.assignment.id})}" class="btn btn-sm btn-outline-primary py-1 px-2">
+                                                    <i class="bi bi-pencil-square"></i> Review
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- My Subjects Quick Access -->
+                <div class="col-lg-4">
+                    <div class="saas-card mb-4">
+                        <div class="card-header-clean">
+                            <h6 class="card-title-clean">My Subjects</h6>
+                            <a th:href="@{/teacher/subjects}" class="text-primary small text-decoration-none">All</a>
+                        </div>
+                        <div class="card-body-clean p-0">
+                            <div class="list-group list-group-flush">
+                                <a th:each="s : ${mySubjects}" th:href="@{/teacher/subjects/{id}(id=${s.id})}"
+                                   class="list-group-item list-group-item-action p-3 d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <span class="badge bg-light text-dark border font-monospace mb-1" th:text="${s.code}">CS301</span>
+                                        <div class="fw-bold text-dark small" th:text="${s.name}">Data Structures</div>
+                                        <span class="text-muted" style="font-size: 0.75rem;" th:text="'Sem ' + ${s.semester} + ' &bull; ' + ${s.course != null ? s.course.code : ''}">Sem 3</span>
+                                    </div>
+                                    <span class="badge bg-primary-subtle text-primary rounded-pill" th:text="${s.enrollments.size()} + ' students'">28</span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quick Tools -->
+                    <div class="saas-card">
+                        <div class="card-header-clean">
+                            <h6 class="card-title-clean">Faculty Quick Tools</h6>
+                        </div>
+                        <div class="card-body-clean d-grid gap-2">
+                            <a th:href="@{/teacher/quizzes}" class="btn btn-light border text-start d-flex align-items-center gap-2 p-2">
+                                <i class="bi bi-patch-question-fill text-purple fs-5"></i>
+                                <div>
+                                    <div class="fw-semibold small text-dark">Create Quiz / Test</div>
+                                    <span class="text-muted" style="font-size: 0.72rem;">Online MCQ & subjective quiz maker</span>
+                                </div>
+                            </a>
+                            <a th:href="@{/teacher/practicals}" class="btn btn-light border text-start d-flex align-items-center gap-2 p-2">
+                                <i class="bi bi-cpu-fill text-success fs-5"></i>
+                                <div>
+                                    <div class="fw-semibold small text-dark">Lab / Practical Setup</div>
+                                    <span class="text-muted" style="font-size: 0.72rem;">Configure experiments & rubric components</span>
+                                </div>
+                            </a>
+                            <a th:href="@{/teacher/materials}" class="btn btn-light border text-start d-flex align-items-center gap-2 p-2">
+                                <i class="bi bi-cloud-arrow-up-fill text-primary fs-5"></i>
+                                <div>
+                                    <div class="fw-semibold small text-dark">Upload Study Materials</div>
+                                    <span class="text-muted" style="font-size: 0.72rem;">Share PDFs, notes, and lab manuals</span>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+</html>

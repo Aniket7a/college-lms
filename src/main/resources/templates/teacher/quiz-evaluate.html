@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Review Quiz Attempt - ' + ${attempt.student.user.fullName})}"></head>
+<body>
+<div class="app-wrapper">
+    <div th:replace="~{fragments/layout :: sidebar('quizzes')}"></div>
+
+    <div class="app-main">
+        <div th:replace="~{fragments/layout :: navbar('Quiz Attempt Evaluation', null)}"></div>
+
+        <div class="app-content">
+            <div th:replace="~{fragments/layout :: alerts}"></div>
+
+            <!-- Header Info -->
+            <div class="saas-card p-4 mb-4">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="d-flex align-items-center gap-2 mb-1">
+                            <span class="badge bg-primary-subtle text-primary font-monospace" th:text="${attempt.student.rollNumber}">2024-CS-001</span>
+                            <span class="badge bg-light text-dark border" th:text="${attempt.quiz.title}">Quiz Title</span>
+                        </div>
+                        <h4 class="fw-bold text-dark mb-1" th:text="'Student: ' + ${attempt.student.user.fullName}">Student Name</h4>
+                        <span class="text-muted small">Submitted: <strong class="text-dark" th:text="${#temporals.format(attempt.submitTime, 'dd MMM yyyy, HH:mm')}">Date</strong></span>
+                    </div>
+                    <div class="text-end">
+                        <span class="text-muted small d-block">Current Score</span>
+                        <h3 class="fw-bold text-primary m-0" th:text="${attempt.score} + ' / ' + ${attempt.quiz.totalMarks}">18 / 20</h3>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Answers Review Form -->
+            <form th:action="@{/teacher/quizzes/attempt/{id}/evaluate(id=${attempt.id})}" method="post">
+                <div class="d-flex flex-column gap-3 mb-4">
+                    <div th:each="ans, iter : ${answers}" class="saas-card p-4">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="badge bg-dark rounded-pill" th:text="'Question ' + ${iter.count}">Q1</span>
+                                <span class="badge bg-secondary-subtle text-secondary" th:text="${ans.question.questionType.displayName}">Type</span>
+                                <span class="badge bg-light text-dark border" th:text="'Max: ' + ${ans.question.marks} + ' Marks'">Max: 5</span>
+                            </div>
+                            <div>
+                                <span th:if="${ans.evaluated}" class="badge bg-success-subtle text-success">Graded: <span th:text="${ans.marksAwarded}">5</span> Marks</span>
+                                <span th:unless="${ans.evaluated}" class="badge bg-warning-subtle text-warning">Pending Review</span>
+                            </div>
+                        </div>
+
+                        <h6 class="fw-bold text-dark mb-3" th:text="${ans.question.questionText}">Question text</h6>
+
+                        <!-- MCQ / Multi / TF Answer Display -->
+                        <div th:if="${ans.question.questionType.name() != 'SHORT_ANSWER'}" class="bg-light p-3 rounded-2 small mb-3">
+                            <span class="text-muted d-block mb-1">Student Selected Choice(s):</span>
+                            <div th:each="opt : ${ans.question.options}">
+                                <div class="d-flex align-items-center gap-2 py-1"
+                                     th:if="${ans.selectedOptionIds != null and ans.selectedOptionIds.contains(opt.id.toString())}">
+                                    <i class="bi bi-check-circle-fill text-primary"></i>
+                                    <strong class="text-dark" th:text="${opt.optionText}">Choice text</strong>
+                                    <span th:if="${opt.correct}" class="badge bg-success text-white" style="font-size: 0.65rem;">Correct Choice</span>
+                                    <span th:unless="${opt.correct}" class="badge bg-danger text-white" style="font-size: 0.65rem;">Incorrect Choice</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Subjective Text Answer -->
+                        <div th:if="${ans.question.questionType.name() == 'SHORT_ANSWER'}" class="mb-3">
+                            <label class="form-label small fw-semibold text-muted">Student's Written Answer:</label>
+                            <div class="p-3 bg-light rounded-2 border text-dark font-monospace small mb-3"
+                                 style="white-space: pre-wrap;"
+                                 th:text="${ans.textAnswer != null and !#strings.isEmpty(ans.textAnswer) ? ans.textAnswer : '[No answer provided]'}">
+                                Answer content
+                            </div>
+
+                            <div class="row g-2 align-items-center">
+                                <div class="col-md-3">
+                                    <label class="form-label small fw-semibold">Award Marks (Max: <span th:text="${ans.question.marks}">5</span>)</label>
+                                    <input type="number" step="0.5" class="form-control" th:name="'mark_' + ${ans.question.id}"
+                                           th:value="${ans.marksAwarded}" min="0" th:max="${ans.question.marks}" required>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Final Feedback & Submit -->
+                <div class="saas-card p-4">
+                    <h6 class="card-title-clean mb-3">Overall Instructor Feedback</h6>
+                    <textarea class="form-control mb-3" name="feedback" rows="3" placeholder="General remarks, strengths, and areas of improvement..." th:text="${attempt.teacherFeedback}"></textarea>
+                    <div class="text-end">
+                        <a th:href="@{/teacher/quizzes/{id}/attempts(id=${attempt.quiz.id})}" class="btn btn-saas-outline me-2">Cancel</a>
+                        <button type="submit" class="btn btn-saas-primary">Save & Finalize Evaluation</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+</html>

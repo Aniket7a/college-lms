@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head(${practical.experimentNumber} + ' - ' + ${practical.title})}"></head>
+<body>
+<div class="app-wrapper">
+    <div th:replace="~{fragments/layout :: sidebar('practicals')}"></div>
+
+    <div class="app-main">
+        <div th:replace="~{fragments/layout :: navbar('Practical Lab Record', null)}"></div>
+
+        <div class="app-content">
+            <div th:replace="~{fragments/layout :: alerts}"></div>
+
+            <div class="row g-4">
+                <!-- Left: Experiment Details & Instructions -->
+                <div class="col-lg-7">
+                    <div class="saas-card p-4 mb-4">
+                        <div class="d-flex align-items-center gap-2 mb-2">
+                            <span class="badge bg-primary-subtle text-primary font-monospace fw-bold fs-6" th:text="${practical.experimentNumber}">EXP-01</span>
+                            <span class="badge bg-light text-dark border font-monospace" th:text="${practical.subject.code}">CS301</span>
+                            <span class="badge bg-secondary-subtle text-secondary" th:text="'Total: ' + ${practical.maxMarks} + ' Marks'">Max: 30 Marks</span>
+                        </div>
+
+                        <h4 class="fw-bold text-dark mb-2" th:text="${practical.title}">Graph BFS and DFS Traversal</h4>
+                        <div class="p-3 bg-light rounded-2 text-dark small mb-3" style="white-space: pre-wrap;" th:text="${practical.description}">Description</div>
+
+                        <!-- Rubric Component Breakdown -->
+                        <h6 class="fw-bold text-dark mb-2">Evaluation Rubric Criteria</h6>
+                        <div class="table-responsive mb-4">
+                            <table class="table-clean border rounded">
+                                <thead>
+                                    <tr>
+                                        <th>Component</th>
+                                        <th>Max Marks</th>
+                                        <th th:if="${submission != null and submission.status == 'EVALUATED'}">Marks Scored</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="comp : ${practical.rubricComponents}">
+                                        <td class="fw-semibold text-dark" th:text="${comp.componentName}">Execution</td>
+                                        <td class="text-muted" th:text="${comp.maxMarks}">10</td>
+                                        <td th:if="${submission != null and submission.status == 'EVALUATED'}">
+                                            <span class="fw-bold text-success"
+                                                  th:each="cs : ${submission.componentScores}"
+                                                  th:if="${cs.component.id == comp.id}"
+                                                  th:text="${cs.marksObtained} + ' pts'">9.5 pts</span>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Viva Questions -->
+                        <div th:if="${practical.vivaQuestions != null and !#strings.isEmpty(practical.vivaQuestions)}" class="mb-3">
+                            <h6 class="fw-bold text-dark mb-2"><i class="bi bi-chat-dots-fill text-primary me-1"></i> Viva Voce Preparation Questions</h6>
+                            <div class="p-3 bg-light rounded-2 border small text-dark" style="white-space: pre-wrap;" th:text="${practical.vivaQuestions}">
+                                Viva Questions
+                            </div>
+                        </div>
+
+                        <!-- Lab Manual File -->
+                        <div th:if="${practical.labManualUrl != null}" class="d-flex align-items-center justify-content-between p-3 bg-light rounded-2 border">
+                            <div class="d-flex align-items-center gap-2">
+                                <i class="bi bi-file-earmark-pdf text-danger fs-4"></i>
+                                <div>
+                                    <strong class="text-dark small d-block" th:text="${practical.labManualName != null ? practical.labManualName : 'Lab_Manual.pdf'}">Manual.pdf</strong>
+                                    <span class="text-muted" style="font-size: 0.75rem;">Official Laboratory Manual</span>
+                                </div>
+                            </div>
+                            <a th:href="@{${practical.labManualUrl}}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-download me-1"></i> Download
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right: Submission & Evaluation -->
+                <div class="col-lg-5">
+                    <!-- Evaluated Result Card -->
+                    <div th:if="${submission != null and submission.status == 'EVALUATED'}" class="saas-card p-4 mb-4 border-success">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h6 class="fw-bold text-success m-0"><i class="bi bi-check-circle-fill me-1"></i> Practical Evaluated</h6>
+                            <span class="badge bg-success-subtle text-success">Graded</span>
+                        </div>
+
+                        <div class="text-center py-3 bg-light rounded-2 mb-3">
+                            <span class="text-muted small d-block">Total Practical Marks</span>
+                            <h2 class="fw-bold text-primary m-0" th:text="${submission.totalMarksObtained} + ' / ' + ${practical.maxMarks}">27.0 / 30</h2>
+                        </div>
+
+                        <div class="small">
+                            <label class="fw-bold text-dark d-block mb-1">Teacher Remarks & Viva Assessment:</label>
+                            <div class="p-3 bg-white border rounded text-muted mb-2" style="white-space: pre-wrap;"
+                                 th:text="${submission.teacherFeedback != null ? submission.teacherFeedback : 'No additional remarks.'}">Feedback</div>
+                            <div class="text-muted" style="font-size: 0.75rem;">
+                                Evaluated on: <span th:text="${#temporals.format(submission.evaluatedAt, 'dd MMM yyyy, HH:mm')}">Date</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Lab Submission Card -->
+                    <div class="saas-card p-4">
+                        <h6 class="card-title-clean mb-3">Lab Report Submission</h6>
+
+                        <div class="d-flex justify-content-between py-2 border-bottom small">
+                            <span class="text-muted">Status:</span>
+                            <span th:if="${submission != null}" class="badge-status"
+                                  th:classappend="${submission.status == 'EVALUATED' ? 'badge-evaluated' : 'badge-submitted'}"
+                                  th:text="${submission.status}">SUBMITTED</span>
+                            <span th:unless="${submission != null}" class="badge-status badge-pending">Not Submitted</span>
+                        </div>
+
+                        <div class="d-flex justify-content-between py-2 border-bottom small">
+                            <span class="text-muted">Due Date:</span>
+                            <strong class="text-dark" th:text="${#temporals.format(practical.dueDate, 'dd MMM yyyy, HH:mm')}">Date</strong>
+                        </div>
+
+                        <div th:if="${submission != null and submission.reportFileUrl != null}" class="py-2 border-bottom small">
+                            <span class="text-muted d-block mb-1">Submitted Report PDF:</span>
+                            <a th:href="@{${submission.reportFileUrl}}" target="_blank" class="text-primary text-decoration-none fw-semibold">
+                                <i class="bi bi-file-earmark-pdf me-1"></i> <span th:text="${submission.reportFileName != null ? submission.reportFileName : 'Lab_Record.pdf'}">Record.pdf</span>
+                            </a>
+                        </div>
+
+                        <!-- Upload Form -->
+                        <div class="mt-4">
+                            <h6 class="fw-bold text-dark mb-2" th:text="${submission != null ? 'Re-upload Lab Record' : 'Upload Lab Report PDF'}">Upload Report</h6>
+                            <form th:action="@{/student/practicals/{id}/submit(id=${practical.id})}" method="post" enctype="multipart/form-data">
+                                <div class="mb-3">
+                                    <label class="form-label small fw-semibold">Select Report File (PDF / DOCX) *</label>
+                                    <input type="file" class="form-control" name="reportFile" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label small fw-semibold">Observations / Student Remarks</label>
+                                    <textarea class="form-control" name="remarks" rows="3" placeholder="Brief methodology, results observed, or execution notes..."
+                                              th:text="${submission != null ? submission.remarks : ''}"></textarea>
+                                </div>
+
+                                <button type="submit" class="btn btn-saas-primary w-100">
+                                    <i class="bi bi-cloud-arrow-up-fill me-1"></i> Submit Practical Work
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+</html>

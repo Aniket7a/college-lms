@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Assignment Management')}"></head>
+<body>
+<div class="app-wrapper">
+    <div th:replace="~{fragments/layout :: sidebar('assignments')}"></div>
+
+    <div class="app-main">
+        <div th:replace="~{fragments/layout :: navbar('Assignments & Tasks', null)}"></div>
+
+        <div class="app-content">
+            <div th:replace="~{fragments/layout :: alerts}"></div>
+
+            <div class="saas-card">
+                <div class="card-header-clean">
+                    <div>
+                        <h6 class="card-title-clean">Course Assignments</h6>
+                        <p class="card-subtitle-clean">Create, manage deadlines, and evaluate student work</p>
+                    </div>
+                    <div>
+                        <button type="button" class="btn btn-saas-primary" data-bs-toggle="modal" data-bs-target="#createAssignmentModal">
+                            <i class="bi bi-plus-circle me-1"></i> Create Assignment
+                        </button>
+                    </div>
+                </div>
+
+                <div class="card-body-clean p-0">
+                    <div th:if="${#lists.isEmpty(assignments)}" class="text-center py-5 text-muted small">
+                        <i class="bi bi-file-earmark-plus fs-2 d-block mb-2"></i>
+                        No assignments created yet. Click "Create Assignment" to get started.
+                    </div>
+                    <div class="table-responsive" th:unless="${#lists.isEmpty(assignments)}">
+                        <table class="table-clean">
+                            <thead>
+                                <tr>
+                                    <th>Subject</th>
+                                    <th>Assignment Title</th>
+                                    <th>Submission Type</th>
+                                    <th>Due Date</th>
+                                    <th>Max Marks</th>
+                                    <th>Submissions</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="a : ${assignments}">
+                                    <td>
+                                        <span class="badge bg-light text-dark border font-monospace" th:text="${a.subject.code}">CS301</span>
+                                        <div class="small text-muted" th:text="${a.subject.name}">Data Structures</div>
+                                    </td>
+                                    <td>
+                                        <div class="fw-bold text-dark" th:text="${a.title}">AVL Tree Implementation</div>
+                                        <small class="text-muted text-truncate d-block" style="max-width: 280px;" th:text="${a.description}"></small>
+                                    </td>
+                                    <td><span class="badge bg-secondary-subtle text-secondary" th:text="${a.submissionType}">BOTH</span></td>
+                                    <td>
+                                        <div class="small fw-semibold text-dark" th:text="${#temporals.format(a.dueDate, 'dd MMM yyyy, HH:mm')}">Date</div>
+                                        <span th:if="${a.expired}" class="badge bg-danger-subtle text-danger" style="font-size: 0.65rem;">Expired</span>
+                                        <span th:unless="${a.expired}" class="badge bg-success-subtle text-success" style="font-size: 0.65rem;">Active</span>
+                                    </td>
+                                    <td class="fw-bold" th:text="${a.maxMarks}">20</td>
+                                    <td>
+                                        <span class="badge bg-primary-subtle text-primary" th:text="${a.submissions.size()} + ' Submitted'">1 Submitted</span>
+                                    </td>
+                                    <td>
+                                        <a th:href="@{/teacher/assignments/{id}/submissions(id=${a.id})}" class="btn btn-sm btn-outline-primary py-1 px-3">
+                                            <i class="bi bi-card-checklist me-1"></i> Grade & View
+                                        </a>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Create Assignment Modal -->
+<div class="modal fade" id="createAssignmentModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content" style="border-radius: 14px;">
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold"><i class="bi bi-file-earmark-text-fill text-primary me-2"></i>Create New Assignment</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form th:action="@{/teacher/assignments/create}" method="post" enctype="multipart/form-data">
+                <div class="modal-body p-4">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label small fw-semibold">Subject *</label>
+                            <select class="form-select" name="subjectId" required>
+                                <option value="" disabled selected>Select Subject</option>
+                                <option th:each="s : ${subjects}" th:value="${s.id}" th:text="${s.code + ' - ' + s.name}"></option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-semibold">Assignment Title *</label>
+                            <input type="text" class="form-control" name="title" placeholder="e.g. Assignment 2: Graph Cycle Detection" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label small fw-semibold">Due Date & Time *</label>
+                            <input type="datetime-local" class="form-control" name="dueDate" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label small fw-semibold">Maximum Marks *</label>
+                            <input type="number" class="form-control" name="maxMarks" value="20" min="1" max="100" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label small fw-semibold">Submission Type *</label>
+                            <select class="form-select" name="submissionType" required>
+                                <option value="BOTH">Both (File Upload & Text)</option>
+                                <option value="FILE">File Upload Only (PDF / ZIP)</option>
+                                <option value="TEXT">Text Answer Only</option>
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label small fw-semibold">Assignment Description *</label>
+                            <textarea class="form-control" name="description" rows="2" placeholder="Brief outline of the assignment goals..." required></textarea>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label small fw-semibold">Detailed Instructions & Grading Rubric</label>
+                            <textarea class="form-control" name="instructions" rows="3" placeholder="Submission guidelines, constraints, formatting rules..."></textarea>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label small fw-semibold">Attach Reference PDF / Problem Statement (Optional)</label>
+                            <input type="file" class="form-control" name="file">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-saas-outline" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-saas-primary">Publish Assignment</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+</html>

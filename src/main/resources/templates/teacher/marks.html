@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Marks & Evaluation Management')}"></head>
+<body>
+<div class="app-wrapper">
+    <div th:replace="~{fragments/layout :: sidebar('marks')}"></div>
+
+    <div class="app-main">
+        <div th:replace="~{fragments/layout :: navbar('Marks & Academic Evaluation', null)}"></div>
+
+        <div class="app-content">
+            <div th:replace="~{fragments/layout :: alerts}"></div>
+
+            <!-- Subject & Assessment Selection Filter Bar -->
+            <div class="saas-card p-3 mb-4">
+                <div class="row g-3 align-items-center">
+                    <div class="col-md-4">
+                        <label class="form-label small fw-semibold text-muted mb-1">Subject</label>
+                        <select class="form-select" onchange="location.href='/teacher/marks?subjectId=' + this.value;">
+                            <option th:each="s : ${subjects}" th:value="${s.id}"
+                                    th:selected="${selectedSubject != null && selectedSubject.id == s.id}"
+                                    th:text="${s.code + ' - ' + s.name}"></option>
+                        </select>
+                    </div>
+                    <div class="col-md-5">
+                        <label class="form-label small fw-semibold text-muted mb-1">Assessment Evaluation Component</label>
+                        <select class="form-select" onchange="location.href='/teacher/marks?subjectId=' + [[${selectedSubject != null ? selectedSubject.id : ''}]] + '&assessmentId=' + this.value;">
+                            <option value="" disabled th:selected="${selectedAssessment == null}">Select Assessment</option>
+                            <option th:each="a : ${assessments}" th:value="${a.id}"
+                                    th:selected="${selectedAssessment != null && selectedAssessment.id == a.id}"
+                                    th:text="${a.title + ' [' + a.assessmentType.displayName + '] - Max ' + a.maxMarks + ' Marks'}"></option>
+                        </select>
+                    </div>
+                    <div class="col-md-3 text-end pt-md-4">
+                        <button type="button" class="btn btn-saas-primary w-100" data-bs-toggle="modal" data-bs-target="#createAssessmentModal">
+                            <i class="bi bi-plus-circle me-1"></i> New Assessment
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Assessment Header Details -->
+            <div th:if="${selectedAssessment != null}" class="saas-card p-4 mb-4">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="d-flex align-items-center gap-2 mb-1">
+                            <span class="badge bg-primary-subtle text-primary" th:text="${selectedAssessment.assessmentType.displayName}">Type</span>
+                            <span class="badge bg-light text-dark border font-monospace" th:text="${selectedAssessment.subject.code}">Code</span>
+                        </div>
+                        <h4 class="fw-bold text-dark mb-1" th:text="${selectedAssessment.title}">Assessment Title</h4>
+                        <div class="text-muted small">
+                            Date: <strong class="text-dark" th:text="${selectedAssessment.assessmentDate}">2026-10-15</strong> &bull;
+                            Maximum Marks: <strong class="text-dark" th:text="${selectedAssessment.maxMarks}">50</strong>
+                        </div>
+                    </div>
+                    <div class="text-end">
+                        <span class="badge bg-success-subtle text-success px-3 py-2 fs-6">
+                            <i class="bi bi-shield-check me-1"></i> Audit Trail Active
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Marks Entry Grid Table -->
+            <div th:if="${selectedAssessment != null}" class="saas-card">
+                <div class="card-header-clean">
+                    <div>
+                        <h6 class="card-title-clean">Student Marks Sheet</h6>
+                        <p class="card-subtitle-clean">Record and update student marks with immediate percentage recalculation and change auditing.</p>
+                    </div>
+                </div>
+
+                <div class="card-body-clean p-0">
+                    <div class="table-responsive">
+                        <table class="table-clean">
+                            <thead>
+                                <tr>
+                                    <th>Roll Number</th>
+                                    <th>Student Name</th>
+                                    <th>Marks Awarded</th>
+                                    <th>Max Marks</th>
+                                    <th>Percentage</th>
+                                    <th>Teacher Remarks</th>
+                                    <th>Last Modified</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="e : ${enrollments}">
+                                    <td>
+                                        <span class="badge bg-light text-dark border font-monospace" th:text="${e.student.rollNumber}">2024-CS-001</span>
+                                    </td>
+                                    <td class="fw-bold text-dark" th:text="${e.student.user.fullName}">Aarav Patel</td>
+                                    <td>
+                                        <div th:if="${studentMarksMap != null and studentMarksMap.containsKey(e.student.id)}">
+                                            <span class="fw-bold fs-6 text-primary" th:text="${studentMarksMap.get(e.student.id).marksObtained}">18.5</span>
+                                        </div>
+                                        <div th:unless="${studentMarksMap != null and studentMarksMap.containsKey(e.student.id)}">
+                                            <span class="badge bg-warning-subtle text-warning">Not Entered</span>
+                                        </div>
+                                    </td>
+                                    <td class="text-muted" th:text="${selectedAssessment.maxMarks}">20</td>
+                                    <td>
+                                        <div th:if="${studentMarksMap != null and studentMarksMap.containsKey(e.student.id)}">
+                                            <span class="badge"
+                                                  th:classappend="${studentMarksMap.get(e.student.id).percentage >= 75 ? 'bg-success-subtle text-success' : 'bg-warning-subtle text-warning'}"
+                                                  th:text="${#numbers.formatDecimal(studentMarksMap.get(e.student.id).percentage, 1, 1)} + '%'">92.5%</span>
+                                        </div>
+                                        <div th:unless="${studentMarksMap != null and studentMarksMap.containsKey(e.student.id)}">-</div>
+                                    </td>
+                                    <td>
+                                        <small class="text-muted text-truncate d-inline-block" style="max-width: 180px;"
+                                               th:text="${studentMarksMap != null and studentMarksMap.containsKey(e.student.id) ? (studentMarksMap.get(e.student.id).teacherRemarks != null ? studentMarksMap.get(e.student.id).teacherRemarks : '-') : '-'}">-</small>
+                                    </td>
+                                    <td>
+                                        <small class="text-muted"
+                                               th:text="${studentMarksMap != null and studentMarksMap.containsKey(e.student.id) ? #temporals.format(studentMarksMap.get(e.student.id).lastModifiedAt, 'dd MMM, HH:mm') : '-'}">-</small>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center gap-1">
+                                            <button type="button" class="btn btn-sm btn-outline-primary py-1 px-2"
+                                                    data-bs-toggle="modal" th:data-bs-target="'#editMarkModal' + ${e.student.id}">
+                                                <i class="bi bi-pencil-square"></i> Record
+                                            </button>
+
+                                            <!-- Audit log toggle if exists -->
+                                            <button th:if="${studentMarksMap != null and studentMarksMap.containsKey(e.student.id) and !studentMarksMap.get(e.student.id).auditLogs.isEmpty()}"
+                                                    type="button" class="btn btn-sm btn-light border py-1 px-2"
+                                                    data-bs-toggle="modal" th:data-bs-target="'#auditModal' + ${e.student.id}" title="View Change Audit History">
+                                                <i class="bi bi-clock-history text-secondary"></i>
+                                            </button>
+                                        </div>
+
+                                        <!-- Edit Mark Modal -->
+                                        <div class="modal fade" th:id="'editMarkModal' + ${e.student.id}" tabindex="-1">
+                                            <div class="modal-dialog">
+                                                <div class="modal-content" style="border-radius: 12px;">
+                                                    <div class="modal-header">
+                                                        <h6 class="modal-title fw-bold" th:text="'Record Mark: ' + ${e.student.user.fullName}">Record Mark</h6>
+                                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                                    </div>
+                                                    <form th:action="@{/teacher/marks/record}" method="post">
+                                                        <input type="hidden" name="assessmentId" th:value="${selectedAssessment.id}">
+                                                        <input type="hidden" name="studentId" th:value="${e.student.id}">
+                                                        <div class="modal-body p-4">
+                                                            <div class="mb-3">
+                                                                <label class="form-label small fw-semibold">
+                                                                    Marks Obtained (Max: <span th:text="${selectedAssessment.maxMarks}">50</span>) *
+                                                                </label>
+                                                                <input type="number" step="0.5" class="form-control" name="marksObtained"
+                                                                       th:value="${studentMarksMap != null and studentMarksMap.containsKey(e.student.id) ? studentMarksMap.get(e.student.id).marksObtained : ''}"
+                                                                       min="0" th:max="${selectedAssessment.maxMarks}" required>
+                                                            </div>
+                                                            <div class="mb-3">
+                                                                <label class="form-label small fw-semibold">Teacher Remarks</label>
+                                                                <input type="text" class="form-control" name="teacherRemarks"
+                                                                       th:value="${studentMarksMap != null and studentMarksMap.containsKey(e.student.id) ? studentMarksMap.get(e.student.id).teacherRemarks : ''}"
+                                                                       placeholder="e.g. Excellent analytical performance">
+                                                            </div>
+                                                            <div class="mb-3" th:if="${studentMarksMap != null and studentMarksMap.containsKey(e.student.id)}">
+                                                                <label class="form-label small fw-semibold text-danger">Reason for Score Modification (Audit Log) *</label>
+                                                                <input type="text" class="form-control" name="reason" placeholder="e.g. Re-evaluated answer sheet upon viva review">
+                                                            </div>
+                                                        </div>
+                                                        <div class="modal-footer">
+                                                            <button type="button" class="btn btn-sm btn-saas-outline" data-bs-dismiss="modal">Cancel</button>
+                                                            <button type="submit" class="btn btn-sm btn-saas-primary">Save Mark</button>
+                                                        </div>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Audit History Modal -->
+                                        <div th:if="${studentMarksMap != null and studentMarksMap.containsKey(e.student.id)}"
+                                             class="modal fade" th:id="'auditModal' + ${e.student.id}" tabindex="-1">
+                                            <div class="modal-dialog">
+                                                <div class="modal-content" style="border-radius: 12px;">
+                                                    <div class="modal-header">
+                                                        <h6 class="modal-title fw-bold">Marks Audit History</h6>
+                                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                                    </div>
+                                                    <div class="modal-body p-3">
+                                                        <div class="list-group list-group-flush">
+                                                            <div th:each="log : ${studentMarksMap.get(e.student.id).auditLogs}" class="list-group-item p-2">
+                                                                <div class="d-flex justify-content-between">
+                                                                    <span class="small fw-bold text-dark">
+                                                                        <span class="text-danger" th:text="${log.previousMarks}">15.0</span> &rarr;
+                                                                        <span class="text-success" th:text="${log.newMarks}">18.5</span>
+                                                                    </span>
+                                                                    <small class="text-muted" th:text="${#temporals.format(log.updatedAt, 'dd MMM, HH:mm')}">Date</small>
+                                                                </div>
+                                                                <small class="text-dark d-block" th:text="${log.updateReason}">Reason</small>
+                                                                <small class="text-muted" th:text="'Updated by: ' + ${log.updatedBy.fullName}">Teacher</small>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Create Assessment Modal -->
+<div class="modal fade" id="createAssessmentModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content" style="border-radius: 14px;">
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold"><i class="bi bi-award-fill text-primary me-2"></i>Create Assessment Entry</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form th:action="@{/teacher/marks/assessment/create}" method="post">
+                <input type="hidden" name="subjectId" th:value="${selectedSubject != null ? selectedSubject.id : ''}">
+                <div class="modal-body p-4">
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold">Assessment Title *</label>
+                        <input type="text" class="form-control" name="title" placeholder="e.g. Unit Test 1 or Internal Assessment" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold">Assessment Category *</label>
+                        <select class="form-select" name="assessmentType" required>
+                            <option value="ASSIGNMENT">Assignment</option>
+                            <option value="QUIZ">Quiz</option>
+                            <option value="PRACTICAL">Practical / Lab</option>
+                            <option value="INTERNAL_TEST" selected>Internal Assessment / Test</option>
+                            <option value="VIVA">Viva Voce</option>
+                            <option value="CLASS_PARTICIPATION">Class Participation</option>
+                        </select>
+                    </div>
+                    <div class="row g-2 mb-3">
+                        <div class="col-6">
+                            <label class="form-label small fw-semibold">Maximum Marks *</label>
+                            <input type="number" step="0.5" class="form-control" name="maxMarks" value="50" min="1" max="500" required>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label small fw-semibold">Date Conducted *</label>
+                            <input type="date" class="form-control" name="assessmentDate" required>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-saas-outline" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-saas-primary">Create Assessment</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+</html>

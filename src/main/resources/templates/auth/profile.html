@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('User Profile')}"></head>
+<body>
+<div class="app-wrapper">
+    <!-- Sidebar -->
+    <div th:replace="~{fragments/layout :: sidebar('profile')}"></div>
+
+    <div class="app-main">
+        <!-- Navbar -->
+        <div th:replace="~{fragments/layout :: navbar('User Profile & Account', null)}"></div>
+
+        <div class="app-content">
+            <div th:replace="~{fragments/layout :: alerts}"></div>
+
+            <div class="row g-4">
+                <div class="col-lg-4">
+                    <div class="saas-card text-center p-4">
+                        <div class="user-avatar mx-auto mb-3" style="width: 72px; height: 72px; font-size: 2rem;">
+                            <span th:text="${#strings.substring(currentUser.fullName, 0, 1)}">U</span>
+                        </div>
+                        <h5 class="fw-bold text-dark mb-1" th:text="${currentUser.fullName}">Full Name</h5>
+                        <p class="text-muted small mb-2" th:text="${currentUser.email}">user@college.edu</p>
+                        <span class="badge bg-primary-subtle text-primary rounded-pill px-3 py-1" th:text="${currentUser.role.displayName}">Role</span>
+
+                        <hr class="my-4">
+
+                        <div class="text-start small">
+                            <div class="d-flex justify-content-between py-1 border-bottom">
+                                <span class="text-muted">Account Status:</span>
+                                <span class="badge bg-success-subtle text-success">Active</span>
+                            </div>
+                            <div class="d-flex justify-content-between py-1 border-bottom" th:if="${studentProfile != null}">
+                                <span class="text-muted">Roll Number:</span>
+                                <strong class="text-dark" th:text="${studentProfile.rollNumber}">2024-CS-001</strong>
+                            </div>
+                            <div class="d-flex justify-content-between py-1 border-bottom" th:if="${studentProfile != null}">
+                                <span class="text-muted">Course:</span>
+                                <span class="text-dark" th:text="${studentProfile.course != null ? studentProfile.course.code : 'N/A'}">BTECH-CSE</span>
+                            </div>
+                            <div class="d-flex justify-content-between py-1 border-bottom" th:if="${studentProfile != null}">
+                                <span class="text-muted">Current Semester:</span>
+                                <span class="text-dark" th:text="'Semester ' + ${studentProfile.currentSemester}">Semester 3</span>
+                            </div>
+                            <div class="d-flex justify-content-between py-1 border-bottom" th:if="${teacherProfile != null}">
+                                <span class="text-muted">Employee ID:</span>
+                                <strong class="text-dark" th:text="${teacherProfile.employeeId}">EMP-101</strong>
+                            </div>
+                            <div class="d-flex justify-content-between py-1 border-bottom" th:if="${teacherProfile != null}">
+                                <span class="text-muted">Designation:</span>
+                                <span class="text-dark" th:text="${teacherProfile.designation}">Professor</span>
+                            </div>
+                            <div class="d-flex justify-content-between py-1">
+                                <span class="text-muted">Member Since:</span>
+                                <span class="text-dark" th:text="${#temporals.format(currentUser.createdAt, 'MMM yyyy')}">Nov 2026</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-8">
+                    <!-- Edit Profile -->
+                    <div class="saas-card mb-4">
+                        <div class="card-header-clean">
+                            <h6 class="card-title-clean">Personal Information</h6>
+                        </div>
+                        <div class="card-body-clean">
+                            <form th:action="@{/profile/update}" method="post">
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label small fw-semibold">Full Name</label>
+                                        <input type="text" class="form-control" name="fullName" th:value="${currentUser.fullName}" required>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label small fw-semibold">Email Address (Read Only)</label>
+                                        <input type="email" class="form-control bg-light" th:value="${currentUser.email}" readonly>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label small fw-semibold">Phone Number</label>
+                                        <input type="tel" class="form-control" name="phone" th:value="${currentUser.phone}">
+                                    </div>
+                                    <div class="col-12 mt-4 text-end">
+                                        <button type="submit" class="btn btn-saas-primary">Save Changes</button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Change Password -->
+                    <div class="saas-card">
+                        <div class="card-header-clean">
+                            <h6 class="card-title-clean">Security & Password</h6>
+                        </div>
+                        <div class="card-body-clean">
+                            <form th:action="@{/profile/password}" method="post">
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label small fw-semibold">New Password</label>
+                                        <input type="password" class="form-control" name="newPassword" placeholder="Minimum 6 characters" required>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label small fw-semibold">Confirm New Password</label>
+                                        <input type="password" class="form-control" name="confirmPassword" placeholder="Re-enter password" required>
+                                    </div>
+                                    <div class="col-12 mt-4 text-end">
+                                        <button type="submit" class="btn btn-saas-outline">Update Password</button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+</html>

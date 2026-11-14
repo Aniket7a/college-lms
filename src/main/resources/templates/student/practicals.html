@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('My Laboratory Practicals')}"></head>
+<body>
+<div class="app-wrapper">
+    <div th:replace="~{fragments/layout :: sidebar('practicals')}"></div>
+
+    <div class="app-main">
+        <div th:replace="~{fragments/layout :: navbar('Laboratory Experiments & Practicals', null)}"></div>
+
+        <div class="app-content">
+            <div th:replace="~{fragments/layout :: alerts}"></div>
+
+            <div class="saas-card">
+                <div class="card-header-clean">
+                    <div>
+                        <h6 class="card-title-clean">Assigned Experiments & Labs</h6>
+                        <p class="card-subtitle-clean">Download lab manuals, submit experiment records, and view component rubric grading (Execution, Output, Viva, Record).</p>
+                    </div>
+                </div>
+
+                <div class="card-body-clean p-0">
+                    <div th:if="${#lists.isEmpty(practicals)}" class="text-center py-5 text-muted small">
+                        No laboratory experiments currently assigned.
+                    </div>
+                    <div class="table-responsive" th:unless="${#lists.isEmpty(practicals)}">
+                        <table class="table-clean">
+                            <thead>
+                                <tr>
+                                    <th>Subject</th>
+                                    <th>Exp #</th>
+                                    <th>Experiment Title</th>
+                                    <th>Max Marks</th>
+                                    <th>Due Date</th>
+                                    <th>Submission Status</th>
+                                    <th>Evaluated Score</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="p : ${practicals}">
+                                    <td>
+                                        <span class="badge bg-light text-dark border font-monospace" th:text="${p.subject.code}">CS301</span>
+                                        <div class="small text-muted" th:text="${p.subject.name}">Data Structures</div>
+                                    </td>
+                                    <td><span class="badge bg-primary-subtle text-primary font-monospace fw-bold" th:text="${p.experimentNumber}">EXP-01</span></td>
+                                    <td>
+                                        <div class="fw-bold text-dark" th:text="${p.title}">BFS and DFS Graph Traversal</div>
+                                        <small class="text-muted text-truncate d-block" style="max-width: 250px;" th:text="${p.description}"></small>
+                                    </td>
+                                    <td class="fw-bold text-dark" th:text="${p.maxMarks}">30</td>
+                                    <td class="small text-muted" th:text="${#temporals.format(p.dueDate, 'dd MMM yyyy')}">Date</td>
+                                    <td>
+                                        <div th:if="${submissionMap.containsKey(p.id)}">
+                                            <span class="badge-status"
+                                                  th:classappend="${submissionMap.get(p.id).status == 'EVALUATED' ? 'badge-evaluated' : 'badge-submitted'}"
+                                                  th:text="${submissionMap.get(p.id).status}">SUBMITTED</span>
+                                        </div>
+                                        <div th:unless="${submissionMap.containsKey(p.id)}">
+                                            <span class="badge-status badge-pending">Not Submitted</span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div th:if="${submissionMap.containsKey(p.id) and submissionMap.get(p.id).totalMarksObtained != null}">
+                                            <strong class="text-primary fs-6" th:text="${submissionMap.get(p.id).totalMarksObtained}">27.0</strong>
+                                            <span class="text-muted" th:text="' / ' + ${p.maxMarks}"> / 30</span>
+                                        </div>
+                                        <div th:unless="${submissionMap.containsKey(p.id) and submissionMap.get(p.id).totalMarksObtained != null}">-</div>
+                                    </td>
+                                    <td>
+                                        <a th:href="@{/student/practicals/{id}(id=${p.id})}" class="btn btn-sm btn-saas-primary py-1 px-3">
+                                            <span th:text="${submissionMap.containsKey(p.id)} ? 'View Report' : 'Submit Lab'">Submit</span>
+                                        </a>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+</html>
