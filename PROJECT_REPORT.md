@@ -13,9 +13,8 @@ Thapar Institute of Engineering & Technology, Patiala
 ### Submitted By:
 | Roll Number | Student Name |
 | :--- | :--- |
-| **102103XXX** | Aniket Beri |
-| **102103XXX** | Student 2 |
-| **102103XXX** | Student 3 |
+| **1024030063** | Aniket  |
+| **1024030989** | Ajay Bhatti |
 
 **Computer Science & Engineering Department**  
 **Thapar Institute of Engineering & Technology, Patiala**  
