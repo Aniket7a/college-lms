@@ -3,96 +3,393 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sign In - College LMS</title>
+    <title>Sign In - Thapar Institute LMS</title>
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link rel="stylesheet" th:href="@{/css/styles.css}">
+    <style>
+        .thapar-auth-page {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem 1rem;
+            background: linear-gradient(135deg, rgba(15, 23, 42, 0.40), rgba(15, 41, 74, 0.60)), 
+                        url('/images/campus_bg.jpg') center center / cover no-repeat fixed;
+            position: relative;
+        }
+
+        .thapar-brand-banner {
+            background: #ffffff;
+            border-radius: 12px;
+            padding: 0.5rem 1.8rem;
+            box-shadow: 0 12px 30px -5px rgba(0, 0, 0, 0.35);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.9);
+            max-width: 90vw;
+        }
+
+        .thapar-brand-banner img {
+            max-height: 68px;
+            width: auto;
+            object-fit: contain;
+        }
+
+        .thapar-split-card {
+            width: 100%;
+            max-width: 960px;
+            border-radius: 14px;
+            overflow: hidden;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.50);
+            background: #ffffff;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        /* Left Side Panel in University Blue Theme */
+        .thapar-left-panel {
+            background: linear-gradient(145deg, #0F294A 0%, #163B66 100%);
+            color: #ffffff;
+            padding: 2.5rem 2.25rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+        }
+
+        .thapar-left-panel::after {
+            content: '';
+            position: absolute;
+            bottom: -30px;
+            right: -30px;
+            width: 160px;
+            height: 160px;
+            background: radial-gradient(circle, rgba(56, 189, 248, 0.15) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        .thapar-left-title {
+            font-size: 1.45rem;
+            font-weight: 700;
+            line-height: 1.35;
+            letter-spacing: -0.01em;
+            margin-bottom: 1.35rem;
+            color: #ffffff;
+        }
+
+        .thapar-info-list {
+            list-style: none;
+            padding: 0;
+            margin: 0 0 1.25rem 0;
+        }
+
+        .thapar-info-list li {
+            font-size: 0.92rem;
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            color: #E2E8F0;
+        }
+
+        .thapar-info-list li i.check-icon {
+            color: #38BDF8;
+            font-size: 1.1rem;
+            margin-right: 0.65rem;
+            flex-shrink: 0;
+        }
+
+        .btn-guest-login {
+            background: rgba(255, 255, 255, 0.12);
+            color: #ffffff;
+            border: 1px solid rgba(255, 255, 255, 0.35);
+            font-size: 0.88rem;
+            font-weight: 500;
+            padding: 0.4rem 1rem;
+            border-radius: 6px;
+            display: inline-block;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .btn-guest-login:hover {
+            background: rgba(255, 255, 255, 0.24);
+            color: #ffffff;
+            border-color: rgba(255, 255, 255, 0.6);
+        }
+
+        .thapar-left-bottom {
+            margin-top: 1.75rem;
+            padding-top: 1.25rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.15);
+        }
+
+        .thapar-left-bottom h5 {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: #ffffff;
+            margin-bottom: 0.5rem;
+        }
+
+        .thapar-left-bottom p {
+            font-size: 0.88rem;
+            color: #CBD5E1;
+            margin-bottom: 1rem;
+            line-height: 1.4;
+        }
+
+        .demo-chip {
+            background: rgba(255, 255, 255, 0.12);
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            color: #ffffff;
+            font-size: 0.76rem;
+            padding: 0.25rem 0.65rem;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+        }
+
+        .demo-chip:hover {
+            background: #ffffff;
+            color: #0F294A;
+            font-weight: 600;
+            border-color: #ffffff;
+        }
+
+        /* Right Side Form Panel */
+        .thapar-right-panel {
+            background: #ffffff;
+            padding: 2.5rem 2.25rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .thapar-form-header {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #1E293B;
+            margin-bottom: 1.35rem;
+        }
+
+        .thapar-input-group {
+            margin-bottom: 1rem;
+        }
+
+        .thapar-input-group .input-group-text {
+            background-color: #ffffff;
+            border-right: none;
+            color: #64748B;
+            padding-left: 0.85rem;
+            padding-right: 0.75rem;
+            border-color: #CBD5E1;
+            border-radius: 6px 0 0 6px;
+        }
+
+        .thapar-input-group .form-control {
+            border-left: none;
+            padding-left: 0.25rem;
+            padding-top: 0.6rem;
+            padding-bottom: 0.6rem;
+            font-size: 0.92rem;
+            border-color: #CBD5E1;
+            border-radius: 0 6px 6px 0;
+        }
+
+        .thapar-input-group .form-control:focus {
+            border-color: #0F294A;
+            box-shadow: none;
+        }
+
+        .thapar-input-group:focus-within .input-group-text {
+            border-color: #0F294A;
+            color: #0F294A;
+        }
+
+        .btn-thapar-login {
+            background-color: #0F294A;
+            color: #ffffff;
+            border: 1px solid #0F294A;
+            font-weight: 600;
+            font-size: 0.96rem;
+            padding: 0.6rem 1.25rem;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+            width: 100%;
+        }
+
+        .btn-thapar-login:hover {
+            background-color: #1D4ED8;
+            border-color: #1D4ED8;
+            color: #ffffff;
+            box-shadow: 0 4px 14px rgba(29, 78, 216, 0.3);
+        }
+
+        .btn-create-account {
+            background-color: #E2E8F0;
+            color: #334155;
+            border: 1px solid #CBD5E1;
+            font-weight: 500;
+            font-size: 0.88rem;
+            padding: 0.45rem 1rem;
+            border-radius: 6px;
+            display: inline-block;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+
+        .btn-create-account:hover {
+            background-color: #CBD5E1;
+            color: #0F172A;
+        }
+    </style>
 </head>
-<body class="bg-light">
+<body class="thapar-auth-page">
 
-<div class="auth-container">
-    <div class="auth-card">
-        <!-- Logo & Branding -->
-        <div class="text-center mb-4">
-            <div class="brand-icon mx-auto mb-3" style="width: 50px; height: 50px; font-size: 1.5rem; border-radius: 12px;">
-                <i class="bi bi-mortarboard-fill"></i>
-            </div>
-            <h3 class="fw-bold text-dark mb-1" style="letter-spacing: -0.02em;">College LMS Portal</h3>
-            <p class="text-muted small">Academic Learning & Course Management System</p>
-        </div>
+    <!-- Top THAPAR-LMS Branding Banner -->
+    <div class="thapar-brand-banner">
+        <img th:src="@{/images/thapar_lms_banner.png}" alt="THAPAR-LMS" 
+             onerror="this.onerror=null; this.src='/images/thapar_logo.jpeg';">
+    </div>
 
-        <!-- Alert messages -->
-        <div th:if="${errorMessage}" class="alert alert-danger py-2 small border-0 shadow-sm rounded-3">
-            <i class="bi bi-exclamation-circle-fill me-1"></i> <span th:text="${errorMessage}"></span>
-        </div>
-        <div th:if="${successMessage}" class="alert alert-success py-2 small border-0 shadow-sm rounded-3">
-            <i class="bi bi-check-circle-fill me-1"></i> <span th:text="${successMessage}"></span>
-        </div>
+    <!-- Main Split Login Container -->
+    <div class="thapar-split-card">
+        <div class="row g-0">
+            <!-- Left Info Panel (University Blue Theme) -->
+            <div class="col-lg-6 thapar-left-panel">
+                <div>
+                    <div class="d-flex align-items-center gap-2 mb-3">
+                        <img th:src="@{/images/thapar_logo.jpeg}" alt="Thapar Emblem" 
+                             class="rounded-2 bg-white p-1" style="width: 36px; height: 36px; object-fit: contain;">
+                        <span class="text-uppercase fw-semibold" style="font-size: 0.75rem; letter-spacing: 0.08em; color: #93C5FD;">Official Academic Portal</span>
+                    </div>
 
-        <!-- Demo Accounts Quick Fill -->
-        <div class="card bg-light border-0 p-3 mb-4 rounded-3">
-            <div class="d-flex align-items-center justify-content-between mb-2">
-                <span class="small fw-bold text-muted text-uppercase" style="font-size: 0.7rem; letter-spacing: 0.05em;">Demo Quick Login</span>
-                <span class="badge bg-primary-subtle text-primary small">1-Click</span>
-            </div>
-            <div class="d-flex flex-wrap gap-2">
-                <button type="button" class="btn btn-sm btn-white border shadow-sm small py-1 px-2" onclick="fillCredentials('admin@college.edu', 'admin123')">
-                    <i class="bi bi-shield-lock-fill text-danger me-1"></i> Admin
-                </button>
-                <button type="button" class="btn btn-sm btn-white border shadow-sm small py-1 px-2" onclick="fillCredentials('dr.sharma@college.edu', 'teacher123')">
-                    <i class="bi bi-person-badge-fill text-primary me-1"></i> Teacher
-                </button>
-                <button type="button" class="btn btn-sm btn-white border shadow-sm small py-1 px-2" onclick="fillCredentials('student1@college.edu', 'student123')">
-                    <i class="bi bi-mortarboard text-success me-1"></i> Student
-                </button>
-            </div>
-        </div>
+                    <h2 class="thapar-left-title">
+                        Thapar Institute-Learning Management System
+                    </h2>
 
-        <!-- Form -->
-        <form th:action="@{/login}" method="post">
-            <div class="mb-3">
-                <label for="email" class="form-label small fw-semibold text-dark">Email / College ID</label>
-                <div class="input-group">
-                    <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-envelope"></i></span>
-                    <input type="email" class="form-control border-start-0 ps-0" id="email" name="email" placeholder="name@college.edu" required autocomplete="username">
+                    <ul class="thapar-info-list">
+                        <li>
+                            <i class="bi bi-check-circle-fill check-icon"></i>
+                            <span>Cookies must be enabled in your browser</span>
+                            <i class="bi bi-question-circle ms-1 text-light opacity-75" 
+                               style="font-size: 0.85rem;" title="Required for secure session authorization"></i>
+                        </li>
+                        <li>
+                            <i class="bi bi-check-circle-fill check-icon"></i>
+                            <span>Some courses may allow guest access</span>
+                        </li>
+                    </ul>
+
+                    <div class="mb-3">
+                        <button type="button" class="btn-guest-login" onclick="fillCredentials('student1@college.edu', 'student123')">
+                            Log in as a guest
+                        </button>
+                    </div>
+                </div>
+
+                <div class="thapar-left-bottom">
+                    <h5>Is this your first time here?</h5>
+                    <p>
+                        For full access to this site, you first need to use your registered college credentials or test with one-click demo accounts below:
+                    </p>
+                    <div class="d-flex flex-wrap gap-2">
+                        <span class="demo-chip" onclick="fillCredentials('admin@college.edu', 'admin123')">
+                            <i class="bi bi-shield-lock-fill me-1 text-warning"></i> Admin
+                        </span>
+                        <span class="demo-chip" onclick="fillCredentials('dr.sharma@college.edu', 'teacher123')">
+                            <i class="bi bi-person-badge-fill me-1 text-info"></i> Teacher
+                        </span>
+                        <span class="demo-chip" onclick="fillCredentials('student1@college.edu', 'student123')">
+                            <i class="bi bi-mortarboard-fill me-1 text-success"></i> Student
+                        </span>
+                    </div>
                 </div>
             </div>
 
-            <div class="mb-3">
-                <div class="d-flex justify-content-between align-items-center">
-                    <label for="password" class="form-label small fw-semibold text-dark">Password</label>
-                    <a href="javascript:void(0)" onclick="alert('For demo purposes, default passwords are admin123, teacher123, or student123.')" class="text-decoration-none small text-muted">Forgot password?</a>
+            <!-- Right Form Panel -->
+            <div class="col-lg-6 thapar-right-panel">
+                <h3 class="thapar-form-header">Already have an account?</h3>
+
+                <!-- Alert Messages -->
+                <div th:if="${errorMessage}" class="alert alert-danger py-2 small border-0 shadow-sm rounded-2 mb-3">
+                    <i class="bi bi-exclamation-circle-fill me-1"></i> <span th:text="${errorMessage}"></span>
                 </div>
-                <div class="input-group">
-                    <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-lock"></i></span>
-                    <input type="password" class="form-control border-start-0 ps-0" id="password" name="password" placeholder="••••••••" required autocomplete="current-password">
+                <div th:if="${successMessage}" class="alert alert-success py-2 small border-0 shadow-sm rounded-2 mb-3">
+                    <i class="bi bi-check-circle-fill me-1"></i> <span th:text="${successMessage}"></span>
+                </div>
+
+                <!-- Sign In Form -->
+                <form th:action="@{/login}" method="post">
+                    <!-- Email / Username input -->
+                    <div class="thapar-input-group">
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-person-fill"></i></span>
+                            <input type="text" class="form-control" id="email" name="email" 
+                                   placeholder="Username / email" required autocomplete="username">
+                        </div>
+                    </div>
+
+                    <!-- Password input -->
+                    <div class="thapar-input-group">
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-lock-fill"></i></span>
+                            <input type="password" class="form-control" id="password" name="password" 
+                                   placeholder="Password" required autocomplete="current-password">
+                        </div>
+                    </div>
+
+                    <!-- Remember username checkbox -->
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" id="remember-me" name="remember-me">
+                        <label class="form-check-label small text-secondary" for="remember-me">
+                            Remember username
+                        </label>
+                    </div>
+
+                    <!-- Log In Button in Blue Theme -->
+                    <button type="submit" class="btn btn-thapar-login mb-3">
+                        Log in
+                    </button>
+
+                    <!-- Forgotten password link -->
+                    <div class="mb-4">
+                        <a href="javascript:void(0)" 
+                           onclick="alert('Demo account credentials:\nAdmin: admin@college.edu / admin123\nTeacher: dr.sharma@college.edu / teacher123\nStudent: student1@college.edu / student123')" 
+                           class="text-decoration-none small text-danger fw-semibold">
+                            Forgotten your username or password?
+                        </a>
+                    </div>
+
+                    <!-- Create New Account Button -->
+                    <div>
+                        <button type="button" class="btn-create-account" 
+                                onclick="alert('Student and Faculty account provisioning is managed by the College Registrar/Administrator. Please contact the academic administration office for new credentials.')">
+                            Create new account
+                        </button>
+                    </div>
+                </form>
+
+                <div class="mt-4 pt-3 border-top d-flex justify-content-between align-items-center text-muted" style="font-size: 0.75rem;">
+                    <span>Thapar Institute of Engg. &amp; Tech.</span>
+                    <span>&copy; 2026-2027</span>
                 </div>
             </div>
-
-            <div class="d-flex align-items-center justify-content-between mb-4">
-                <div class="form-check">
-                    <input class="form-check-input" type="checkbox" id="remember-me" name="remember-me">
-                    <label class="form-check-label small text-muted" for="remember-me">Remember me</label>
-                </div>
-            </div>
-
-            <button type="submit" class="btn btn-saas-primary w-100 py-2 fw-semibold">
-                Sign In to LMS <i class="bi bi-arrow-right ms-1"></i>
-            </button>
-        </form>
-
-        <div class="text-center mt-4 pt-3 border-top">
-            <span class="text-muted small">Secure Role-Based Academic Management &bull; 2026-2027</span>
         </div>
     </div>
-</div>
 
-<script>
-    function fillCredentials(email, pwd) {
-        document.getElementById('email').value = email;
-        document.getElementById('password').value = pwd;
-    }
-</script>
+    <!-- Script to populate form fields on 1-click chip click -->
+    <script>
+        function fillCredentials(email, pwd) {
+            document.getElementById('email').value = email;
+            document.getElementById('password').value = pwd;
+        }
+    </script>
 </body>
 </html>
